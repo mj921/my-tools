@@ -3,41 +3,36 @@
     <mj-input v-model="peopleNum" placeholder="人数" />
     <mj-button @click="init">重新开始</mj-button>
     <mj-button @click="next">下一步</mj-button>
-    <table>
-      <thead>
-        <tr>
-          <th>id</th>
-          <th>剩余防守次数</th>
-          <th>进攻列表</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(item, i) in ids" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.defTimes }}</td>
-          <td>
-            <span
-              v-for="(el, j) in item.attackList"
-              :style="{
-                color: item.attackList.filter((v) => v === el).length > 1 ? 'red' : undefined,
-              }"
-              :key="`${i}-${j}-${el}`"
-              >{{ el }}</span
-            >
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <mj-table :columns="columns" :data="ids" primary-key="id">
+      <template #attackList="{ row }">
+        <span
+          v-for="(el, j) in row.attackList"
+          :style="{
+            color: row.attackList.filter((v) => v === el).length > 1 ? 'red' : undefined,
+          }"
+          :key="`attackList-${j}-${el}`"
+        >
+          {{ el }}
+        </span>
+      </template>
+    </mj-table>
   </div>
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue';
 import MjInput from '@/components/MjInput/MjInput.vue';
 import MjButton from '@/components/MjButton/MjButton.vue';
+import MjTable from '@/components/MjTable/MjTable.vue';
 
 const peopleNum = ref(20);
 const ids = ref<{ id: number; defTimes: number; attackList: number[] }[]>([]);
 const currentIndex = ref(0);
+
+const columns = [
+  { name: 'id' },
+  { label: '剩余防守次数', name: 'defTimes' },
+  { label: '进攻列表', name: 'attackList', slotName: 'attackList' },
+];
 
 const next = () => {
   if (currentIndex.value >= peopleNum.value) return;

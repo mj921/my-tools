@@ -56,6 +56,21 @@ const router = createRouter({
       name: 'rankfight',
       component: () => import('../views/RankFightView.vue'),
     },
+    {
+      path: '/game/zhongzu',
+      name: 'game-zhongzu',
+      component: () => import('../views/Games/ZhongZu/ZhongZuView.vue'),
+    },
+    {
+      path: '/chaodai',
+      name: 'chaodai',
+      component: () => import('../views/ChaoDai/ChaoDaiView.vue'),
+    },
+    {
+      path: '/game/flipcard',
+      name: 'game-flipcard',
+      component: () => import('../views/Games/FlipCard/FlipCardView.vue'),
+    },
   ],
 });
 
