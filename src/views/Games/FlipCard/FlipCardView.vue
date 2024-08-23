@@ -30,7 +30,7 @@
               </dl>
               <dl>
                 <span>
-                  <label>最多次数</label>
+                  <label>最少次数</label>
                   <i v-if="!record?.[item.key]?.num?.best">-</i>
                   <template v-else>
                     <b>{{ record?.[item.key]?.num?.best[1] }}</b>
@@ -38,7 +38,7 @@
                   </template>
                 </span>
                 <span>
-                  <label>最少次数</label>
+                  <label>最多次数</label>
                   <i v-if="!record?.[item.key]?.num?.worst">-</i>
                   <template v-else>
                     <b>{{ record?.[item.key]?.num?.worst[1] }}</b>

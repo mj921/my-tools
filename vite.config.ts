@@ -7,6 +7,7 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: process.env.NODE_ENV === 'development' ? '/' : '/my-tools/',
   server: {
     host: true,
   },
