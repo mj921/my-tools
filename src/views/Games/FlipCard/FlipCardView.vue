@@ -28,7 +28,7 @@
                   </template>
                 </span>
               </dl>
-              <dl>
+              <dl :data-difficulty="`${record?.[item.key].count || 0}次`">
                 <span>
                   <label>最少次数</label>
                   <i v-if="!record?.[item.key]?.num?.best">-</i>
@@ -127,13 +127,16 @@ const recordKey = [
   { key: '6', label: '中等' },
   { key: '8', label: '困难' },
 ];
-const record =
-  reactive<
-    Record<
-      string,
-      { time: { best: number[]; worst: number[] }; num: { best: number[]; worst: number[] } }
-    >
-  >(recordJson);
+const record = reactive<
+  Record<
+    string,
+    {
+      time: { best: number[]; worst: number[] };
+      num: { best: number[]; worst: number[] };
+      count: number;
+    }
+  >
+>(recordJson);
 const scene = ref('main');
 const board = ref<string[]>([]);
 const boardSize = ref(0);
@@ -194,6 +197,7 @@ const win = () => {
     ) {
       record[gameInfo.size].num.worst = [time, gameInfo.flipNum];
     }
+    record[gameInfo.size].count = (record[gameInfo.size].count || 0) + 1;
   } else {
     record[gameInfo.size] = {
       time: {
@@ -204,6 +208,7 @@ const win = () => {
         best: [time, gameInfo.flipNum],
         worst: [time, gameInfo.flipNum],
       },
+      count: 1,
     };
   }
   localStorage.setItem('flipCardRecord', JSON.stringify(record));
@@ -327,20 +332,24 @@ onMounted(() => {
             font-weight: bold;
           }
           dl {
-            padding-left: 3em;
+            padding-left: 5em;
             position: relative;
             span {
               display: inline-block;
-              width: 12em;
+              width: 11em;
               label {
                 margin-right: 0.5em;
               }
             }
             &[data-difficulty]::before {
-              content: attr(data-difficulty) ':';
+              content: attr(data-difficulty);
               position: absolute;
+              width: 4em;
               left: 0;
               top: 0;
+            }
+            &:nth-child(odd)[data-difficulty]::before {
+              font-size: 0.8em;
             }
           }
         }
