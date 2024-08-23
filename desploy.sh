@@ -4,6 +4,8 @@ npm run build
 
 cd dist
 
+cp index.html 404.html
+
 git init
 git checkout -b gh-pages
 git add .
