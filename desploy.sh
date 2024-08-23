@@ -2,6 +2,8 @@
 
 npm run build
 
+cd dist
+
 git init
 git remote add origin git@github.com:mj921/my-tools.git
 git add .
