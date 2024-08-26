@@ -28,7 +28,7 @@
                   </template>
                 </span>
               </dl>
-              <dl :data-difficulty="`${record?.[item.key].count || 0}次`">
+              <dl :data-difficulty="`${record?.[item.key]?.count || 0}次`">
                 <span>
                   <label>最少次数</label>
                   <i v-if="!record?.[item.key]?.num?.best">-</i>
@@ -197,7 +197,7 @@ const win = () => {
     ) {
       record[gameInfo.size].num.worst = [time, gameInfo.flipNum];
     }
-    record[gameInfo.size].count = (record[gameInfo.size].count || 0) + 1;
+    record[gameInfo.size].count = (record[gameInfo.size]?.count || 0) + 1;
   } else {
     record[gameInfo.size] = {
       time: {
