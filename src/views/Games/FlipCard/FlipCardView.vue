@@ -8,41 +8,44 @@
         <div class="flip-main-item--front">翻</div>
         <div class="flip-main-item--back flip-main-item-record">
           <div class="flip-main-record-box">
-            <dt>记录</dt>
+            <dt>
+              <span>记录</span>
+              <img src="@/assets/icons/Games/FlipCard/rank.svg" @click="() => (visible = true)" />
+            </dt>
             <template v-for="item in recordKey" :key="item.key">
               <dl :data-difficulty="item.label">
                 <span>
                   <label>最快时间</label>
                   <i v-if="!record?.[item.key]?.time?.best">-</i>
                   <template v-else>
-                    <b>{{ millisecondsToMinutes(record?.[item.key]?.time?.best[0]) }}</b>
-                    ({{ record?.[item.key]?.time?.best[1] }})
+                    <b>{{ millisecondsToMinutes(record?.[item.key]?.time?.best?.[0][0]) }}</b>
+                    ({{ record?.[item.key]?.time?.best?.[0][1] }})
                   </template>
                 </span>
                 <span>
                   <label>最慢时间</label>
-                  <i v-if="!record?.[item.key]?.time?.worst">-</i>
+                  <i v-if="!record?.[item.key]?.time?.worst?.[0]">-</i>
                   <template v-else>
-                    <b>{{ millisecondsToMinutes(record?.[item.key]?.time?.worst[0]) }}</b>
-                    ({{ record?.[item.key]?.time?.worst[1] }})
+                    <b>{{ millisecondsToMinutes(record?.[item.key]?.time?.worst?.[0][0]) }}</b>
+                    ({{ record?.[item.key]?.time?.worst?.[0][1] }})
                   </template>
                 </span>
               </dl>
               <dl :data-difficulty="`${record?.[item.key]?.count || 0}次`">
                 <span>
                   <label>最少次数</label>
-                  <i v-if="!record?.[item.key]?.num?.best">-</i>
+                  <i v-if="!record?.[item.key]?.num?.best?.[0]">-</i>
                   <template v-else>
-                    <b>{{ record?.[item.key]?.num?.best[1] }}</b>
-                    ({{ millisecondsToMinutes(record?.[item.key]?.num?.best[0]) }})
+                    <b>{{ record?.[item.key]?.num?.best?.[0][1] }}</b>
+                    ({{ millisecondsToMinutes(record?.[item.key]?.num?.best?.[0][0]) }})
                   </template>
                 </span>
                 <span>
                   <label>最多次数</label>
-                  <i v-if="!record?.[item.key]?.num?.worst">-</i>
+                  <i v-if="!record?.[item.key]?.num?.worst?.[0]">-</i>
                   <template v-else>
-                    <b>{{ record?.[item.key]?.num?.worst[1] }}</b>
-                    ({{ millisecondsToMinutes(record?.[item.key]?.num?.worst[0]) }})
+                    <b>{{ record?.[item.key]?.num?.worst?.[0][1] }}</b>
+                    ({{ millisecondsToMinutes(record?.[item.key]?.num?.worst?.[0][0]) }})
                   </template>
                 </span>
               </dl>
@@ -98,6 +101,151 @@
         </template>
       </dd>
     </div>
+    <div class="flip-dialog" v-show="visible">
+      <div class="flip-dialog-mask">
+        <div class="flip-dialog-box">
+          <img
+            class="flip-dialog-close"
+            src="@/assets/icons/Games/FlipCard/close.svg"
+            @click="visible = false"
+          />
+          <div class="flip-dialog-difficulties">
+            <dl
+              v-for="item in recordKey"
+              :key="`dialog-difficultiy${item.key}`"
+              :class="{ 'flip-dialog-difficulties--active': dialogType === item.key }"
+              @click="dialogType = item.key"
+            >
+              {{ item.label }}
+            </dl>
+          </div>
+          <div class="flip-dialog-tabs">
+            <dl
+              key="besttime"
+              :class="{ 'flip-dialog-tab--active': currentDialogTab === 'besttime' }"
+              @click="currentDialogTab = 'besttime'"
+            >
+              用时最短
+            </dl>
+            <dl
+              key="bestnum"
+              :class="{ 'flip-dialog-tab--active': currentDialogTab === 'bestnum' }"
+              @click="currentDialogTab = 'bestnum'"
+            >
+              步数最少
+            </dl>
+            <dl
+              key="worsttime"
+              :class="{ 'flip-dialog-tab--active': currentDialogTab === 'worsttime' }"
+              @click="currentDialogTab = 'worsttime'"
+            >
+              用时最长
+            </dl>
+            <dl
+              key="worstnum"
+              :class="{ 'flip-dialog-tab--active': currentDialogTab === 'worstnum' }"
+              @click="currentDialogTab = 'worstnum'"
+            >
+              步数最多
+            </dl>
+            <dl
+              key="latest"
+              :class="{ 'flip-dialog-tab--active': currentDialogTab === 'latest' }"
+              @click="currentDialogTab = 'latest'"
+            >
+              最近游戏
+            </dl>
+          </div>
+          <div class="flip-dialog-lists" v-if="dialogType">
+            <ul
+              :class="{
+                'flip-dialog-list': true,
+                'flip-dialog-list--active': currentDialogTab === 'besttime',
+              }"
+            >
+              <li>
+                <dd>用时</dd>
+                <dd>步数</dd>
+                <dd>时间</dd>
+              </li>
+              <li v-for="(item, i) in record[dialogType].time.best" :key="`besttime-${i}`">
+                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ item[1] }}</dd>
+                <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
+              </li>
+            </ul>
+            <ul
+              :class="{
+                'flip-dialog-list': true,
+                'flip-dialog-list--active': currentDialogTab === 'worsttime',
+              }"
+            >
+              <li>
+                <dd>用时</dd>
+                <dd>步数</dd>
+                <dd>时间</dd>
+              </li>
+              <li v-for="(item, i) in record[dialogType].time.worst" :key="`worsttime-${i}`">
+                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ item[1] }}</dd>
+                <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
+              </li>
+            </ul>
+            <ul
+              :class="{
+                'flip-dialog-list': true,
+                'flip-dialog-list--active': currentDialogTab === 'bestnum',
+              }"
+            >
+              <li>
+                <dd>步数</dd>
+                <dd>用时</dd>
+                <dd>时间</dd>
+              </li>
+              <li v-for="(item, i) in record[dialogType].num.best" :key="`bestnum-${i}`">
+                <dd>{{ item[1] }}</dd>
+                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
+              </li>
+            </ul>
+            <ul
+              :class="{
+                'flip-dialog-list': true,
+                'flip-dialog-list--active': currentDialogTab === 'worstnum',
+              }"
+            >
+              <li>
+                <dd>步数</dd>
+                <dd>用时</dd>
+                <dd>时间</dd>
+              </li>
+              <li v-for="(item, i) in record[dialogType].num.worst" :key="`worstnum-${i}`">
+                <dd>{{ item[1] }}</dd>
+                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
+              </li>
+            </ul>
+            <ul
+              :class="{
+                'flip-dialog-list': true,
+                'flip-dialog-list--active': currentDialogTab === 'latest',
+              }"
+            >
+              <li>
+                <dd>用时</dd>
+                <dd>步数</dd>
+                <dd>时间</dd>
+              </li>
+              <li v-for="(item, i) in record[dialogType].latest" :key="`latest-${i}`">
+                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ item[1] }}</dd>
+                <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script lang="ts" setup>
@@ -106,6 +254,9 @@ import { icons } from './config';
 import { nextTick } from 'vue';
 import { reactive } from 'vue';
 import { onMounted } from 'vue';
+import { dateFmt } from '@/utils/date';
+
+const version = 1;
 
 const mainCardStatus = ref([0, 0, 0, 0]);
 const mainToggle = (index: number) => {
@@ -116,12 +267,34 @@ const mainToggle = (index: number) => {
   mainCardStatus.value = arr;
 };
 const recordStr = localStorage.getItem('flipCardRecord') || '{}';
-let recordJson = {};
+const recordVersion = +(localStorage.getItem('recordVersion') || '0');
+let recordJson: any = {};
 try {
   recordJson = JSON.parse(recordStr);
+  if (recordStr !== '{}') {
+    if (recordVersion === 0) {
+      for (let key in recordJson) {
+        recordJson[key] = {
+          time: {
+            best: [recordJson[key].time.best],
+            worst: [recordJson[key].time.worst],
+          },
+          num: {
+            best: [recordJson[key].num.best],
+            worst: [recordJson[key].num.worst],
+          },
+          count: recordJson[key].count,
+          latest: [],
+        };
+      }
+      localStorage.setItem('flipCardRecord', JSON.stringify(recordJson));
+      localStorage.setItem('recordVersion', version.toString());
+    }
+  }
 } catch {
   /* empty */
 }
+
 const recordKey = [
   { key: '4', label: '简单' },
   { key: '6', label: '中等' },
@@ -131,12 +304,16 @@ const record = reactive<
   Record<
     string,
     {
-      time: { best: number[]; worst: number[] };
-      num: { best: number[]; worst: number[] };
+      time: { best: number[][]; worst: number[][] };
+      num: { best: number[][]; worst: number[][] };
+      latest: number[][];
       count: number;
     }
   >
 >(recordJson);
+const visible = ref(false);
+const dialogType = ref('4');
+const currentDialogTab = ref('besttime');
 const scene = ref('main');
 const board = ref<string[]>([]);
 const boardSize = ref(0);
@@ -149,6 +326,7 @@ const gameInfo = reactive({
 const addZero = (n: number) => `0${n}`.slice(-2);
 const millisecondsToMinutes = (t: number) =>
   `${addZero(Math.floor(t / 60000))}:${addZero(Math.floor((t % 60000) / 1000))}`;
+
 const activeCard = ref<number[]>([]);
 const createGame = (size: number) => {
   activeCard.value = [];
@@ -167,47 +345,62 @@ const createGame = (size: number) => {
   });
 };
 const win = () => {
-  const time = Date.now() - gameInfo.startTime;
+  const now = Date.now();
+  const time = now - gameInfo.startTime;
   if (record[gameInfo.size]) {
-    if (
-      record[gameInfo.size].time.best[0] > time ||
-      (record[gameInfo.size].time.best[0] === time &&
-        record[gameInfo.size].time.best[1] > gameInfo.flipNum)
-    ) {
-      record[gameInfo.size].time.best = [time, gameInfo.flipNum];
-    }
-    if (
-      record[gameInfo.size].time.worst[0] < time ||
-      (record[gameInfo.size].time.worst[0] === time &&
-        record[gameInfo.size].time.worst[1] < gameInfo.flipNum)
-    ) {
-      record[gameInfo.size].time.worst = [time, gameInfo.flipNum];
-    }
-    if (
-      record[gameInfo.size].num.best[1] > gameInfo.flipNum ||
-      (record[gameInfo.size].num.best[1] === gameInfo.flipNum &&
-        record[gameInfo.size].num.best[0] > time)
-    ) {
-      record[gameInfo.size].num.best = [time, gameInfo.flipNum];
-    }
-    if (
-      record[gameInfo.size].num.worst[1] < gameInfo.flipNum ||
-      (record[gameInfo.size].num.worst[1] === gameInfo.flipNum &&
-        record[gameInfo.size].num.worst[0] < time)
-    ) {
-      record[gameInfo.size].num.worst = [time, gameInfo.flipNum];
-    }
+    record[gameInfo.size].time.best.push([time, gameInfo.flipNum, now]);
+    record[gameInfo.size].time.best.sort((a, b) =>
+      a[0] > b[0] ||
+      (a[0] === b[0] && a[1] > b[1]) ||
+      (a[0] === b[0] && a[1] === b[1] && a[2] < b[2])
+        ? 1
+        : -1,
+    );
+    record[gameInfo.size].time.best.slice(0, 10);
+
+    record[gameInfo.size].time.worst.push([time, gameInfo.flipNum, now]);
+    record[gameInfo.size].time.worst.sort((a, b) =>
+      a[0] < b[0] ||
+      (a[0] === b[0] && a[1] < b[1]) ||
+      (a[0] === b[0] && a[1] === b[1] && a[2] < b[2])
+        ? 1
+        : -1,
+    );
+    record[gameInfo.size].time.worst.slice(0, 10);
+
+    record[gameInfo.size].num.best.push([time, gameInfo.flipNum, now]);
+    record[gameInfo.size].num.best.sort((a, b) =>
+      a[0] > b[0] ||
+      (a[0] === b[0] && a[1] > b[1]) ||
+      (a[0] === b[0] && a[1] === b[1] && a[2] < b[2])
+        ? 1
+        : -1,
+    );
+    record[gameInfo.size].num.best.slice(0, 10);
+
+    record[gameInfo.size].num.worst.push([time, gameInfo.flipNum, now]);
+    record[gameInfo.size].num.worst.sort((a, b) =>
+      a[0] < b[0] ||
+      (a[0] === b[0] && a[1] < b[1]) ||
+      (a[0] === b[0] && a[1] === b[1] && a[2] < b[2])
+        ? 1
+        : -1,
+    );
+    record[gameInfo.size].num.worst.slice(0, 10);
+    record[gameInfo.size].latest.unshift([time, gameInfo.flipNum, now]);
+    record[gameInfo.size].latest.slice(0, 10);
     record[gameInfo.size].count = (record[gameInfo.size]?.count || 0) + 1;
   } else {
     record[gameInfo.size] = {
       time: {
-        best: [time, gameInfo.flipNum],
-        worst: [time, gameInfo.flipNum],
+        best: [[time, gameInfo.flipNum, now]],
+        worst: [[time, gameInfo.flipNum, now]],
       },
       num: {
-        best: [time, gameInfo.flipNum],
-        worst: [time, gameInfo.flipNum],
+        best: [[time, gameInfo.flipNum, now]],
+        worst: [[time, gameInfo.flipNum, now]],
       },
+      latest: [[time, gameInfo.flipNum, now]],
       count: 1,
     };
   }
@@ -253,6 +446,8 @@ onMounted(() => {
   --flip-main-item-size: 150px;
   --flip-main-record-fontsize: 20px;
   --flip-main-record-fontsize-dt: 28px;
+  --flip-color-green: #16a085;
+  --flip-color-red: #c0392b;
   .flip-main {
     position: absolute;
     left: 50%;
@@ -267,7 +462,7 @@ onMounted(() => {
       height: var(--flip-main-item-size);
       position: relative;
       .flip-main-item--front {
-        background-color: #16a085;
+        background-color: var(--flip-color-green);
         text-align: center;
         line-height: var(--flip-main-item-size);
         font-weight: bold;
@@ -287,7 +482,7 @@ onMounted(() => {
         top: 0;
       }
       .flip-main-item--back {
-        background-color: #c0392b;
+        background-color: var(--flip-color-red);
         width: 100%;
         height: 100%;
         text-align: center;
@@ -330,6 +525,14 @@ onMounted(() => {
           dt {
             font-size: var(--flip-main-record-fontsize-dt);
             font-weight: bold;
+            vertical-align: middle;
+            img {
+              width: var(--flip-main-record-fontsize-dt);
+              margin-left: 0.5em;
+              display: inline-block;
+              vertical-align: middle;
+              cursor: pointer;
+            }
           }
           dl {
             padding-left: 5em;
@@ -380,7 +583,7 @@ onMounted(() => {
     .flip-game-item {
       position: relative;
       .flip-game-item--front {
-        background-color: #16a085;
+        background-color: var(--flip-color-green);
         box-sizing: border-box;
         border: 1px solid #333;
         display: flex;
@@ -400,7 +603,7 @@ onMounted(() => {
       .flip-game-item--back {
         width: 100%;
         height: 100%;
-        background-color: #c0392b;
+        background-color: var(--flip-color-red);
         box-sizing: border-box;
         border: 1px solid #333;
         display: flex;
@@ -423,6 +626,105 @@ onMounted(() => {
         .flip-game-item--back {
           transform: rotateY(0deg);
           z-index: 2;
+        }
+      }
+    }
+  }
+  .flip-dialog {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    .flip-dialog-mask {
+      width: 100%;
+      height: 100%;
+      background-color: rgba($color: #000000, $alpha: 0.3);
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .flip-dialog-box {
+        background-color: var(--flip-color-green);
+        color: #fff;
+        width: calc(var(--flip-main-size) * 2);
+        height: calc(var(--flip-main-size) * 2);
+        padding: 20px;
+        transform: scale(0.5);
+        transform-origin: 50% 50%;
+        position: relative;
+        .flip-dialog-close {
+          position: absolute;
+          right: calc(var(--flip-main-record-fontsize) * -3);
+          top: calc(var(--flip-main-record-fontsize) * -3);
+          width: calc(var(--flip-main-record-fontsize) * 3);
+          cursor: pointer;
+        }
+        .flip-dialog-difficulties {
+          font-size: var(--flip-main-record-fontsize);
+          display: flex;
+          gap: 40px;
+          padding: 20px;
+          dl {
+            width: 33%;
+            text-align: center;
+            line-height: 1.5;
+            cursor: pointer;
+            opacity: 0.8;
+            &.flip-dialog-difficulties--active {
+              opacity: 1;
+              position: relative;
+              font-weight: bold;
+              font-size: larger;
+              color: var(--flip-color-red);
+              text-shadow: 0 0 3px #fff;
+            }
+          }
+        }
+        .flip-dialog-tabs {
+          font-size: calc(var(--flip-main-record-fontsize) * 0.8);
+          display: flex;
+          gap: 40px;
+          padding: 20px;
+          dl {
+            width: 20%;
+            text-align: center;
+            line-height: 1.5;
+            cursor: pointer;
+            &.flip-dialog-tab--active {
+              position: relative;
+              font-weight: bold;
+              &::after {
+                content: '';
+                position: absolute;
+                bottom: -14px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 4em;
+                height: 6px;
+                background-color: #fff;
+              }
+            }
+          }
+        }
+        .flip-dialog-lists {
+          .flip-dialog-list {
+            display: none;
+            font-size: var(--flip-main-record-fontsize);
+            &.flip-dialog-list--active {
+              display: block;
+            }
+            li {
+              display: flex;
+              dd {
+                width: 25%;
+                text-align: center;
+                &:last-child {
+                  width: 50%;
+                }
+              }
+            }
+          }
         }
       }
     }
