@@ -169,7 +169,7 @@
                 <dd>时间</dd>
               </li>
               <li v-for="(item, i) in record[dialogType].time.best" :key="`besttime-${i}`">
-                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
                 <dd>{{ item[1] }}</dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
@@ -186,7 +186,7 @@
                 <dd>时间</dd>
               </li>
               <li v-for="(item, i) in record[dialogType].time.worst" :key="`worsttime-${i}`">
-                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
                 <dd>{{ item[1] }}</dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
@@ -204,7 +204,7 @@
               </li>
               <li v-for="(item, i) in record[dialogType].num.best" :key="`bestnum-${i}`">
                 <dd>{{ item[1] }}</dd>
-                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
             </ul>
@@ -221,7 +221,7 @@
               </li>
               <li v-for="(item, i) in record[dialogType].num.worst" :key="`worstnum-${i}`">
                 <dd>{{ item[1] }}</dd>
-                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
             </ul>
@@ -237,7 +237,7 @@
                 <dd>时间</dd>
               </li>
               <li v-for="(item, i) in record[dialogType].latest" :key="`latest-${i}`">
-                <dd>{{ millisecondsToMinutes(item[0]) }}</dd>
+                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
                 <dd>{{ item[1] }}</dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
@@ -255,6 +255,7 @@ import { nextTick } from 'vue';
 import { reactive } from 'vue';
 import { onMounted } from 'vue';
 import { dateFmt } from '@/utils/date';
+import { addZero } from '@/utils';
 
 const version = 1;
 
@@ -323,9 +324,8 @@ const gameInfo = reactive({
   flipNum: 0,
   size: 0,
 });
-const addZero = (n: number) => `0${n}`.slice(-2);
-const millisecondsToMinutes = (t: number) =>
-  `${addZero(Math.floor(t / 60000))}:${addZero(Math.floor((t % 60000) / 1000))}`;
+const millisecondsToMinutes = (t: number, showMilliseconds = false) =>
+  `${addZero(Math.floor(t / 60000))}:${addZero(Math.floor((t % 60000) / 1000))}${showMilliseconds ? `.${addZero(t % 1000, 3)}` : ''}`;
 
 const activeCard = ref<number[]>([]);
 const createGame = (size: number) => {
@@ -352,43 +352,54 @@ const win = () => {
     record[gameInfo.size].time.best.sort((a, b) =>
       a[0] > b[0] ||
       (a[0] === b[0] && a[1] > b[1]) ||
-      (a[0] === b[0] && a[1] === b[1] && a[2] < b[2])
+      (a[0] === b[0] && a[1] === b[1] && (a[2] || 0) > (b[2] || 0))
         ? 1
         : -1,
     );
-    record[gameInfo.size].time.best.slice(0, 10);
+    if (record[gameInfo.size].time.best.length > 10) {
+      record[gameInfo.size].time.best.pop();
+    }
 
     record[gameInfo.size].time.worst.push([time, gameInfo.flipNum, now]);
     record[gameInfo.size].time.worst.sort((a, b) =>
       a[0] < b[0] ||
       (a[0] === b[0] && a[1] < b[1]) ||
-      (a[0] === b[0] && a[1] === b[1] && a[2] < b[2])
+      (a[0] === b[0] && a[1] === b[1] && (a[2] || 0) > (b[2] || 0))
         ? 1
         : -1,
     );
-    record[gameInfo.size].time.worst.slice(0, 10);
+    if (record[gameInfo.size].time.worst.length > 10) {
+      record[gameInfo.size].time.worst.pop();
+    }
 
     record[gameInfo.size].num.best.push([time, gameInfo.flipNum, now]);
     record[gameInfo.size].num.best.sort((a, b) =>
-      a[0] > b[0] ||
-      (a[0] === b[0] && a[1] > b[1]) ||
-      (a[0] === b[0] && a[1] === b[1] && a[2] < b[2])
+      a[1] > b[1] ||
+      (a[1] === b[1] && a[0] > b[0]) ||
+      (a[0] === b[0] && a[1] === b[1] && (a[2] || 0) > (b[2] || 0))
         ? 1
         : -1,
     );
-    record[gameInfo.size].num.best.slice(0, 10);
+    if (record[gameInfo.size].num.best.length > 10) {
+      record[gameInfo.size].num.best.pop();
+    }
 
     record[gameInfo.size].num.worst.push([time, gameInfo.flipNum, now]);
     record[gameInfo.size].num.worst.sort((a, b) =>
-      a[0] < b[0] ||
-      (a[0] === b[0] && a[1] < b[1]) ||
-      (a[0] === b[0] && a[1] === b[1] && a[2] < b[2])
+      a[1] < b[1] ||
+      (a[1] === b[1] && a[0] < b[0]) ||
+      (a[0] === b[0] && a[1] === b[1] && (a[2] || 0) > (b[2] || 0))
         ? 1
         : -1,
     );
     record[gameInfo.size].num.worst.slice(0, 10);
+    if (record[gameInfo.size].num.worst.length > 10) {
+      record[gameInfo.size].num.worst.pop();
+    }
     record[gameInfo.size].latest.unshift([time, gameInfo.flipNum, now]);
-    record[gameInfo.size].latest.slice(0, 10);
+    if (record[gameInfo.size].latest.length > 10) {
+      record[gameInfo.size].latest.pop();
+    }
     record[gameInfo.size].count = (record[gameInfo.size]?.count || 0) + 1;
   } else {
     record[gameInfo.size] = {
