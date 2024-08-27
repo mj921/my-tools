@@ -169,7 +169,11 @@
                 <dd>时间</dd>
               </li>
               <li v-for="(item, i) in record[dialogType].time.best" :key="`besttime-${i}`">
-                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
+                <dd
+                  v-html="
+                    millisecondsToMinutes(item[0], true).replace(/(\.\d{3})$/, '<small>$1</small>')
+                  "
+                ></dd>
                 <dd>{{ item[1] }}</dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
@@ -186,7 +190,11 @@
                 <dd>时间</dd>
               </li>
               <li v-for="(item, i) in record[dialogType].time.worst" :key="`worsttime-${i}`">
-                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
+                <dd
+                  v-html="
+                    millisecondsToMinutes(item[0], true).replace(/(\.\d{3})$/, '<small>$1</small>')
+                  "
+                ></dd>
                 <dd>{{ item[1] }}</dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
@@ -204,7 +212,11 @@
               </li>
               <li v-for="(item, i) in record[dialogType].num.best" :key="`bestnum-${i}`">
                 <dd>{{ item[1] }}</dd>
-                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
+                <dd
+                  v-html="
+                    millisecondsToMinutes(item[0], true).replace(/(\.\d{3})$/, '<small>$1</small>')
+                  "
+                ></dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
             </ul>
@@ -221,7 +233,11 @@
               </li>
               <li v-for="(item, i) in record[dialogType].num.worst" :key="`worstnum-${i}`">
                 <dd>{{ item[1] }}</dd>
-                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
+                <dd
+                  v-html="
+                    millisecondsToMinutes(item[0], true).replace(/(\.\d{3})$/, '<small>$1</small>')
+                  "
+                ></dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
             </ul>
@@ -237,7 +253,11 @@
                 <dd>时间</dd>
               </li>
               <li v-for="(item, i) in record[dialogType].latest" :key="`latest-${i}`">
-                <dd>{{ millisecondsToMinutes(item[0], true) }}</dd>
+                <dd
+                  v-html="
+                    millisecondsToMinutes(item[0], true).replace(/(\.\d{3})$/, '<small>$1</small>')
+                  "
+                ></dd>
                 <dd>{{ item[1] }}</dd>
                 <dd>{{ item[2] ? dateFmt('YYYY-MM-DD HH:mm:ss', new Date(item[2])) : '-' }}</dd>
               </li>
@@ -732,6 +752,11 @@ onMounted(() => {
                 text-align: center;
                 &:last-child {
                   width: 50%;
+                }
+                :deep small {
+                  font-size: 0.9em;
+                  opacity: 0.7;
+                  font-weight: 275;
                 }
               }
             }
