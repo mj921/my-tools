@@ -156,7 +156,7 @@
               最近游戏
             </dl>
           </div>
-          <div class="flip-dialog-lists" v-if="dialogType">
+          <div class="flip-dialog-lists" v-if="dialogType && record[dialogType]">
             <ul
               :class="{
                 'flip-dialog-list': true,
