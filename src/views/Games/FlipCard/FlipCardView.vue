@@ -747,6 +747,7 @@ onMounted(() => {
             }
             li {
               display: flex;
+              line-height: 1.9;
               dd {
                 width: 25%;
                 text-align: center;
