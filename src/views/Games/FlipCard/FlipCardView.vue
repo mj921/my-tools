@@ -309,12 +309,12 @@ try {
         };
       }
       localStorage.setItem('flipCardRecord', JSON.stringify(recordJson));
-      localStorage.setItem('recordVersion', version.toString());
     }
   }
 } catch {
   /* empty */
 }
+localStorage.setItem('recordVersion', version.toString());
 
 const recordKey = [
   { key: '4', label: '简单' },

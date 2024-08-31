@@ -71,6 +71,11 @@ const router = createRouter({
       name: 'game-flipcard',
       component: () => import('../views/Games/FlipCard/FlipCardView.vue'),
     },
+    {
+      path: '/tool/csssprite',
+      name: 'tool-csssprite',
+      component: () => import('../views/Tools/CssSprite/CssSprite.vue'),
+    },
   ],
 });
 
