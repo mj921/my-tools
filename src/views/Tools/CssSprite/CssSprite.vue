@@ -41,8 +41,6 @@ const temp = ref(
 }`,
 );
 
-const tab = ref('img');
-
 const cssContent = ref('');
 
 const tempChange = () => {

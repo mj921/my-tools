@@ -266,6 +266,9 @@
         </div>
       </div>
     </div>
+    <div class="flip-toast" v-show="winVisible">
+      本次游戏花费时间：{{ millisecondsToMinutes(winInfo[0]) }} ，翻转次数：{{ winInfo[1] || 0 }}
+    </div>
   </div>
 </template>
 <script lang="ts" setup>
@@ -338,13 +341,15 @@ const currentDialogTab = ref('besttime');
 const scene = ref('main');
 const board = ref<string[]>([]);
 const boardSize = ref(0);
+const winInfo = ref<number[]>([]);
+const winVisible = ref(false);
 const gameInfo = reactive({
   startTime: 0,
   cardNum: 0,
   flipNum: 0,
   size: 0,
 });
-const millisecondsToMinutes = (t: number, showMilliseconds = false) =>
+const millisecondsToMinutes = (t = 0, showMilliseconds = false) =>
   `${addZero(Math.floor(t / 60000))}:${addZero(Math.floor((t % 60000) / 1000))}${showMilliseconds ? `.${addZero(t % 1000, 3)}` : ''}`;
 
 const activeCard = ref<number[]>([]);
@@ -367,6 +372,7 @@ const createGame = (size: number) => {
 const win = () => {
   const now = Date.now();
   const time = now - gameInfo.startTime;
+  winInfo.value = [time, gameInfo.flipNum, now];
   if (record[gameInfo.size]) {
     record[gameInfo.size].time.best.push([time, gameInfo.flipNum, now]);
     record[gameInfo.size].time.best.sort((a, b) =>
@@ -436,23 +442,33 @@ const win = () => {
     };
   }
   localStorage.setItem('flipCardRecord', JSON.stringify(record));
-  scene.value = 'main';
+  setTimeout(() => {
+    scene.value = 'main';
+    winVisible.value = true;
+    setTimeout(() => {
+      winVisible.value = false;
+    }, 2000);
+  }, 500);
 };
 const cardClick = (index: number) => {
-  if (activeCard.value.length < 2) {
+  if (!activeCard.value.includes(index)) {
     gameInfo.flipNum++;
-    activeCard.value.push(index);
-    if (activeCard.value.length === 2) {
-      setTimeout(() => {
-        if (board.value[activeCard.value[0]] === board.value[activeCard.value[1]]) {
-          board.value[activeCard.value[0]] = '';
-          board.value[activeCard.value[1]] = '';
-          gameInfo.cardNum -= 2;
-          if (gameInfo.cardNum === 0) {
-            win();
-          }
+    activeCard.value.unshift(index);
+    if (activeCard.value.length % 2 === 0) {
+      if (board.value[activeCard.value[0]] === board.value[activeCard.value[1]]) {
+        gameInfo.cardNum -= 2;
+        if (gameInfo.cardNum === 0) {
+          win();
         }
-        activeCard.value = [];
+      }
+      setTimeout(() => {
+        if (scene.value === 'game' || activeCard.value.length < 2) return;
+        const val1 = activeCard.value.pop()!;
+        const val2 = activeCard.value.pop()!;
+        if (board.value[val1] === board.value[val2]) {
+          board.value[val1] = '';
+          board.value[val2] = '';
+        }
       }, 500);
     }
   }
@@ -765,6 +781,17 @@ onMounted(() => {
         }
       }
     }
+  }
+  .flip-toast {
+    position: fixed;
+    z-index: 99;
+    padding: 12px 24px;
+    color: #fff;
+    font-size: var(--flip-main-record-fontsize / 2);
+    left: 50%;
+    transform: translateX(-50%);
+    top: 50px;
+    background-color: var(--flip-color-green);
   }
 }
 @media screen and (min-width: 960px) {
