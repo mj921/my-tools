@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import FlipCardIcon from '@/components/MjIcon/FlipCardIcon.vue';
 import AnimationIcon from '@/components/MjIcon/AnimationIcon.vue';
+import CssSpriteIcon from '@/components/MjIcon/CssSpriteIcon.vue';
+import MarkdownIcon from '@/components/MjIcon/MarkdownIcon.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -12,6 +14,16 @@ const navs = [
         logo: AnimationIcon,
         link: '/animates',
         name: 'css动画',
+      },
+      {
+        logo: CssSpriteIcon,
+        link: '/tool/csssprite',
+        name: 'css sprite',
+      },
+      {
+        logo: MarkdownIcon,
+        link: '/tool/markdown',
+        name: 'markdown(未完善)',
       },
     ],
   },

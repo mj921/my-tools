@@ -76,6 +76,16 @@ const router = createRouter({
       name: 'tool-csssprite',
       component: () => import('../views/Tools/CssSprite/CssSprite.vue'),
     },
+    {
+      path: '/tool/borderradius',
+      name: 'tool-borderradius',
+      component: () => import('../views/Tools/CustomBorderRadius/CustomBorderRadius.vue'),
+    },
+    {
+      path: '/tool/markdown',
+      name: 'tool-markdown',
+      component: () => import('../views/Tools/MarkDown/MarkDown.vue'),
+    },
   ],
 });
 

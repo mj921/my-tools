@@ -8,10 +8,9 @@
         <div class="canvas-box" ref="canvasBox"></div>
       </mj-tab-panel>
       <mj-tab-panel title="css" key="css">
-        <pre>{{ cssContent }}</pre>
-        <!-- <textarea cols="100" rows="30" v-model="cssContent" readonly></textarea> -->
+        <mj-pre :value="cssContent"></mj-pre>
       </mj-tab-panel>
-      <mj-tab-panel title="css模板" key="temp">
+      <mj-tab-panel title="css模板" key="temp" style="padding-top: 20px">
         <textarea cols="100" rows="6" v-model="temp" @change="tempChange"></textarea>
       </mj-tab-panel>
       <mj-tab-panel title="下载" key="download">
@@ -23,6 +22,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import MjTabs from '@/components/MjTabs';
+import MjPre from '@/components/MjPre/MjPre.vue';
 
 const MjTabPanel = MjTabs.Panel;
 
