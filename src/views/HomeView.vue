@@ -3,6 +3,7 @@ import FlipCardIcon from '@/components/MjIcon/FlipCardIcon.vue';
 import AnimationIcon from '@/components/MjIcon/AnimationIcon.vue';
 import CssSpriteIcon from '@/components/MjIcon/CssSpriteIcon.vue';
 import MarkdownIcon from '@/components/MjIcon/MarkdownIcon.vue';
+import MineClearanceIcon from '@/components/MjIcon/MineClearanceIcon.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -34,6 +35,11 @@ const navs = [
         logo: FlipCardIcon,
         link: '/game/flipcard',
         name: '翻转卡片',
+      },
+      {
+        logo: MineClearanceIcon,
+        link: '/game/mineclearance',
+        name: '扫雷',
       },
     ],
   },

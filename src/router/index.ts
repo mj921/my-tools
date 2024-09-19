@@ -72,6 +72,11 @@ const router = createRouter({
       component: () => import('../views/Games/FlipCard/FlipCardView.vue'),
     },
     {
+      path: '/game/mineclearance',
+      name: 'game-mineclearance',
+      component: () => import('../views/Games/MineClearance/MineClearance.vue'),
+    },
+    {
       path: '/tool/csssprite',
       name: 'tool-csssprite',
       component: () => import('../views/Tools/CssSprite/CssSprite.vue'),
