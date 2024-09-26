@@ -4,6 +4,7 @@ import AnimationIcon from '@/components/MjIcon/AnimationIcon.vue';
 import CssSpriteIcon from '@/components/MjIcon/CssSpriteIcon.vue';
 import MarkdownIcon from '@/components/MjIcon/MarkdownIcon.vue';
 import MineClearanceIcon from '@/components/MjIcon/MineClearanceIcon.vue';
+import Merge2048Icon from '@/components/MjIcon/Merge2048Icon.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -40,6 +41,11 @@ const navs = [
         logo: MineClearanceIcon,
         link: '/game/mineclearance',
         name: '扫雷',
+      },
+      {
+        logo: Merge2048Icon,
+        link: '/game/2048',
+        name: '2048',
       },
     ],
   },
