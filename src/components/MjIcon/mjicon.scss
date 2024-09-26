@@ -1,0 +1,20 @@
+.mj-icon {
+  color: var(--mj-icon-color);
+  width: 1em;
+  height: 1em;
+  vertical-align: top;
+  &.mj-icon-spin {
+    animation: spin linear infinite 1s;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(180deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+}
