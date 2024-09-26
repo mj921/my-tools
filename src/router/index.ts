@@ -57,6 +57,11 @@ const router = createRouter({
       component: () => import('../views/RankFightView.vue'),
     },
     {
+      path: '/componentdemo',
+      name: 'componentdemo',
+      component: () => import('../views/ComponentDemo.vue'),
+    },
+    {
       path: '/game/zhongzu',
       name: 'game-zhongzu',
       component: () => import('../views/Games/ZhongZu/ZhongZuView.vue'),
@@ -90,6 +95,11 @@ const router = createRouter({
       path: '/tool/markdown',
       name: 'tool-markdown',
       component: () => import('../views/Tools/MarkDown/MarkDown.vue'),
+    },
+    {
+      path: '/game/2048',
+      name: 'game-2048',
+      component: () => import('../views/Games/2048/Merge2048.vue'),
     },
   ],
 });
