@@ -11,14 +11,26 @@
       <mj-button v-else @click="selectDir">选择文件夹</mj-button>
     </div>
     <div class="file-content">
+      <mj-slider
+        v-if="showBase64"
+        active-color="orange"
+        style="margin-left: 20px; width: 200px"
+        v-model="opacity"
+      />
       <img v-if="fileContent.type === 'url'" :src="fileContent.content" />
       <mj-md v-else-if="fileContent.type === 'md'" :content="fileContent.content" />
       <template v-else-if="fileContent.type === 'text'">
         <img
           v-if="showBase64 && /^data:image\/[^;]*;base64,/.test(fileContent.content)"
           :src="fileContent.content"
+          :style="{ opacity: opacity / 100 }"
         />
-        <mj-pre v-else :value="fileContent.content" :lang="fileContent.lang" />
+        <mj-pre
+          v-else
+          :value="fileContent.content"
+          :lang="fileContent.lang"
+          :style="{ opacity: opacity / 100 }"
+        />
       </template>
     </div>
   </div>
@@ -29,10 +41,11 @@ import MjTree from '@/components/MjTree/MjTree.vue';
 import MjButton from '@/components/MjButton/MjButton.vue';
 import MjMd from '@/components/MjMd/MjMd.vue';
 import MjPre from '@/components/MjPre/MjPre.vue';
+import MjSlider from '@/components/MjSlider/MjSlider.vue';
 import type { MjTreeNodeData } from '@/components/MjTree/interface.ts';
 import { reactive } from 'vue';
 
-withDefaults(defineProps<{ showBase64?: boolean }>(), {
+const props = withDefaults(defineProps<{ showBase64?: boolean }>(), {
   showBase64: false,
 });
 
@@ -42,6 +55,7 @@ const fileContent = reactive({
   type: 'null',
   lang: '',
 });
+const opacity = ref(0);
 
 const selectDir = async () => {
   const rootDirectoryHandle = await (window as any).showDirectoryPicker();
@@ -61,13 +75,16 @@ const loadMore = async (node: MjTreeNodeData) => {
     if (file.type.includes('image/')) {
       fileContent.type = 'url';
       fileContent.content = URL.createObjectURL(file);
+      opacity.value = 100;
     } else {
       const reader = new FileReader();
       reader.onload = (evt) => {
         fileContent.content = (evt?.target?.result || '').toString();
         if (/\.md$/.test(file.name)) {
           fileContent.type = 'md';
+          opacity.value = 100;
         } else {
+          opacity.value = props.showBase64 ? 0 : 100;
           fileContent.type = 'text';
         }
         if (/\.css$/.test(file.name)) {

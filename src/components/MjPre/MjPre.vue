@@ -97,6 +97,7 @@ const eleList = computed<{ type: string; value: string }[]>(() => {
 .mj-pre {
   background-color: #1f1f1f;
   padding: 16px;
+  word-break: break-all;
   .mj-pre-css-selector {
     color: #d7ba7d;
   }
