@@ -8,7 +8,7 @@
         <div class="canvas-box" ref="canvasBox"></div>
       </mj-tab-panel>
       <mj-tab-panel title="css" key="css">
-        <mj-pre :value="cssContent"></mj-pre>
+        <mj-pre :value="cssContent" lang="css"></mj-pre>
       </mj-tab-panel>
       <mj-tab-panel title="css模板" key="temp" style="padding-top: 20px">
         <textarea cols="100" rows="6" v-model="temp" @change="tempChange"></textarea>

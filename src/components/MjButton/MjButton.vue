@@ -182,6 +182,8 @@ const className = computed(() => {
 
   &.mj-btn-dashed {
     @extend .mj-btn-border;
+    border-width: 1px;
+    border-style: dashed;
     &.mj-btn-status-success {
       --mj-btn-bg: var(--mj-color-success-bg);
       --mj-btn-bg-hover: var(--mj-color-success-bg-hover);
@@ -200,8 +202,6 @@ const className = computed(() => {
       --mj-btn-bg-disabled: var(--mj-color-error-bg-disabled);
       --mj-btn-bg-active: var(--mj-color-error-bg-active);
     }
-    border-width: 1px;
-    border-style: dashed;
   }
 
   &.mj-btn-text {

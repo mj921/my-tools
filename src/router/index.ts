@@ -97,9 +97,24 @@ const router = createRouter({
       component: () => import('../views/Tools/MarkDown/MarkDown.vue'),
     },
     {
+      path: '/tool/filebrower',
+      name: 'tool-filebrower',
+      component: () => import('../views/Tools/FileBrower/FileBrower.vue'),
+    },
+    {
+      path: '/tool/perviewbase64',
+      name: 'tool-perviewbase64',
+      component: () => import('../views/Tools/FileBrower/PerviewBase64.vue'),
+    },
+    {
       path: '/game/2048',
       name: 'game-2048',
       component: () => import('../views/Games/2048/Merge2048.vue'),
+    },
+    {
+      path: '/game/trucksimulation',
+      name: 'game-trucksimulation',
+      component: () => import('../views/Games/TruckSimulation/TruckSimulation.vue'),
     },
   ],
 });

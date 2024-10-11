@@ -1,20 +1,24 @@
 <template>
   <div class="mj-pre">
-    <template v-for="(item, i) in eleList" :key="i">
-      <br v-if="item.type === 'br'" />
-      <span v-else :class="`mj-pre-css-${item.type}`">
-        <span
-          class="mj-pre-css-color-preview"
-          v-if="isColor(item.value)"
-          :style="{ backgroundColor: item.value }"
-        ></span>
-        {{ item.value }}
-      </span>
+    <template v-if="lang === 'css'">
+      <template v-for="(item, i) in eleList" :key="i">
+        <br v-if="item.type === 'br'" />
+        <span v-else :class="`mj-pre-css-${item.type}`">
+          <span
+            class="mj-pre-css-color-preview"
+            v-if="isColor(item.value)"
+            :style="{ backgroundColor: item.value }"
+          ></span>
+          {{ item.value }}
+        </span>
+      </template>
+    </template>
+    <template v-else>
+      <p v-for="(item, i) in eleList" :key="i">{{ item.value }}</p>
     </template>
   </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue';
 import type { MjPreProps } from './interface';
 import { computed } from 'vue';
 
@@ -77,7 +81,17 @@ const parseCss = () => {
   }
   return list;
 };
-const eleList = computed<{ type: string; value: string }[]>(() => parseCss());
+const parseText = () => {
+  return props.value.split(/[\n\r]/).map((el) => ({ type: 'text', value: el }));
+};
+const eleList = computed<{ type: string; value: string }[]>(() => {
+  switch (props.lang) {
+    case 'css':
+      return parseCss();
+    default:
+      return parseText();
+  }
+});
 </script>
 <style scoped lang="scss">
 .mj-pre {
