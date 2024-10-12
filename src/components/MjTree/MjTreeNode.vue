@@ -28,7 +28,9 @@ const props = defineProps<MjTreeNodeProps>();
 const expanded = ref(false);
 
 const onNodeClick = () => {
-  if (expanded.value) {
+  if (props.node.isLeaf && typeof props.loadMore === 'function') {
+    props.loadMore(props.node);
+  } else if (expanded.value) {
     expanded.value = false;
   } else if (props.node.children.length === 0 && typeof props.loadMore === 'function') {
     props.loadMore(props.node).then(() => {
