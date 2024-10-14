@@ -60,7 +60,6 @@ import MjPre from '@/components/MjPre/MjPre.vue';
 import MjSlider from '@/components/MjSlider/MjSlider.vue';
 import CloseIcon from '@/components/MjIcon/CloseIcon.vue';
 import type { MjTreeNodeData } from '@/components/MjTree/interface.ts';
-import { watch } from 'vue';
 
 const props = withDefaults(defineProps<{ showBase64?: boolean }>(), {
   showBase64: false,
