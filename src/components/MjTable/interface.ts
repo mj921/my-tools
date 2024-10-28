@@ -1,7 +1,9 @@
 export interface MjTableColumnProp {
+  width?: number;
   label?: string;
   name: string;
   slotName?: string;
+  align?: 'left' | 'center' | 'right';
   formatter?: (value: any, row: any, i: number) => any;
 }
 

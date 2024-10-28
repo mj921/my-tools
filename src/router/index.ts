@@ -62,6 +62,11 @@ const router = createRouter({
       component: () => import('../views/ComponentDemo.vue'),
     },
     {
+      path: '/example/day',
+      name: 'example-day',
+      component: () => import('../views/ComponentExample/DayExample.vue'),
+    },
+    {
       path: '/game/zhongzu',
       name: 'game-zhongzu',
       component: () => import('../views/Games/ZhongZu/ZhongZuView.vue'),
@@ -115,6 +120,11 @@ const router = createRouter({
       path: '/game/trucksimulation',
       name: 'game-trucksimulation',
       component: () => import('../views/Games/TruckSimulation/TruckSimulation.vue'),
+    },
+    {
+      path: '/game/drawcircle',
+      name: 'game-drawcircle',
+      component: () => import('../views/Games/DrawCircle/DrawCircle.vue'),
     },
   ],
 });

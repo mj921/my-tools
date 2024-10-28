@@ -51,7 +51,7 @@
 import { onBeforeUnmount } from 'vue';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
-import MjMessage from '@/components/MjMessage/mjmessage.ts';
+import MjMessage from '@/components/MjMessage';
 
 const merge2048JSON = localStorage.getItem('merge2048');
 let merge2048Obj = {

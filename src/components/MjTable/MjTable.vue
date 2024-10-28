@@ -1,8 +1,21 @@
 <template>
   <table :class="tableClassNames">
+    <colgroup>
+      <col
+        v-for="column in columns"
+        :key="`col-${column.name}`"
+        :style="{
+          width: `${column.width || 80}px`,
+        }"
+      />
+    </colgroup>
     <thead>
       <tr>
-        <th v-for="column in columns" :key="`thead-${column.name}`">
+        <th
+          v-for="column in columns"
+          :key="`thead-${column.name}`"
+          :style="{ textAlign: column.align }"
+        >
           {{ column.label ?? column.name }}
         </th>
       </tr>
@@ -15,6 +28,7 @@
         <td
           v-for="column in columns"
           :key="`tbody-td-${primaryKey ? (row as any)[primaryKey] : $index}-${column.name}`"
+          :style="{ textAlign: column.align }"
         >
           <slot
             v-if="column.slotName"
