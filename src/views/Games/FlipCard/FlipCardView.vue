@@ -279,8 +279,9 @@ import { reactive } from 'vue';
 import { onMounted } from 'vue';
 import { dateFmt } from '@/utils/date';
 import { addZero } from '@/utils';
+import BinaryWriter from '@/lib/saver/BinaryWriter';
 
-const version = 1;
+const version = 2;
 
 const mainCardStatus = ref([0, 0, 0, 0]);
 const mainToggle = (index: number) => {
@@ -290,32 +291,87 @@ const mainToggle = (index: number) => {
   }
   mainCardStatus.value = arr;
 };
-const recordStr = localStorage.getItem('flipCardRecord') || '{}';
 const recordVersion = +(localStorage.getItem('recordVersion') || '0');
 let recordJson: any = {};
-try {
-  recordJson = JSON.parse(recordStr);
-  if (recordStr !== '{}') {
-    if (recordVersion === 0) {
-      for (let key in recordJson) {
-        recordJson[key] = {
-          time: {
-            best: [recordJson[key].time.best],
-            worst: [recordJson[key].time.worst],
-          },
-          num: {
-            best: [recordJson[key].num.best],
-            worst: [recordJson[key].num.worst],
-          },
-          count: recordJson[key].count,
-          latest: [],
-        };
-      }
-      localStorage.setItem('flipCardRecord', JSON.stringify(recordJson));
+
+const read = () => {
+  const data = localStorage.getItem('flipCardRecordData');
+  if (!data) return;
+  const reader = new BinaryWriter('Read', 1);
+  reader.setRawData(data);
+  const sizes = reader.readArray((r1) => r1.readString());
+  const obj: Record<
+    string,
+    {
+      time: { best: number[][]; worst: number[][] };
+      num: { best: number[][]; worst: number[][] };
+      latest: number[][];
+      count: number;
     }
+  > = {};
+  const keys: ('time' | 'num')[] = ['time', 'num'];
+  sizes.forEach((sizeKey) => {
+    obj[sizeKey] = {
+      time: {
+        best: [],
+        worst: [],
+      },
+      num: {
+        best: [],
+        worst: [],
+      },
+      latest: [],
+      count: 0,
+    };
+    keys.forEach((itemKey) => {
+      (['best', 'worst'] as ('best' | 'worst')[]).forEach((innerKey) => {
+        obj[sizeKey][itemKey][innerKey] = reader.readArray((r1) => {
+          return r1.readArray((r2) => {
+            return Number(r2.readBigUint64());
+          });
+        });
+      });
+    });
+    obj[sizeKey].latest = reader.readArray((r1) => {
+      return r1.readArray((r2) => {
+        return Number(r2.readBigUint64());
+      });
+    });
+    obj[sizeKey].count = reader.readUint32();
+  });
+  return obj;
+};
+if (localStorage.getItem('flipCardRecordData')) {
+  recordJson = read();
+  if (localStorage.getItem('flipCardRecord')) {
+    localStorage.removeItem('flipCardRecord');
   }
-} catch {
-  /* empty */
+} else {
+  const recordStr = localStorage.getItem('flipCardRecord') || '{}';
+  try {
+    recordJson = JSON.parse(recordStr);
+    if (recordStr !== '{}') {
+      if (recordVersion === 0) {
+        for (let key in recordJson) {
+          recordJson[key] = {
+            time: {
+              best: [recordJson[key].time.best],
+              worst: [recordJson[key].time.worst],
+            },
+            num: {
+              best: [recordJson[key].num.best],
+              worst: [recordJson[key].num.worst],
+            },
+            count: recordJson[key].count,
+            latest: [],
+          };
+        }
+        localStorage.setItem('flipCardRecord', JSON.stringify(recordJson));
+      }
+    }
+  } catch {
+    /* empty */
+  }
 }
 localStorage.setItem('recordVersion', version.toString());
 
@@ -368,6 +424,30 @@ const createGame = (size: number) => {
   nextTick(() => {
     gameInfo.startTime = Date.now();
   });
+};
+const save = () => {
+  const sizes = ['4', '6', '8'];
+  const writer = new BinaryWriter('Write', 10000);
+  writer.writeArray(sizes, (val, writer1) => writer1.writeString(val));
+  const keys: ('time' | 'num')[] = ['time', 'num'];
+  sizes.forEach((sizeKey) => {
+    keys.forEach((itemKey) => {
+      (['best', 'worst'] as ('best' | 'worst')[]).forEach((innerKey) => {
+        writer.writeArray(record[sizeKey]?.[itemKey]?.[innerKey] || [], (val, w1) => {
+          w1.writeArray(val, (val2, w2) => {
+            w2.writeBigUInt64(BigInt(val2));
+          });
+        });
+      });
+    });
+    writer.writeArray(record[sizeKey]?.latest || [], (val, w1) => {
+      w1.writeArray(val, (val2, w2) => {
+        w2.writeBigUInt64(BigInt(val2));
+      });
+    });
+    writer.writeUint32(record[sizeKey]?.count || 0);
+  });
+  localStorage.setItem('flipCardRecordData', writer.getRawDataStr());
 };
 const win = () => {
   const now = Date.now();
@@ -441,7 +521,7 @@ const win = () => {
       count: 1,
     };
   }
-  localStorage.setItem('flipCardRecord', JSON.stringify(record));
+  save();
   setTimeout(() => {
     scene.value = 'main';
     winVisible.value = true;
