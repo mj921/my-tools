@@ -341,11 +341,43 @@ const read = () => {
   });
   return obj;
 };
+
+const save = (
+  data: Record<
+    string,
+    {
+      time: { best: number[][]; worst: number[][] };
+      num: { best: number[][]; worst: number[][] };
+      latest: number[][];
+      count: number;
+    }
+  >,
+) => {
+  const sizes = ['4', '6', '8'];
+  const writer = new BinaryWriter('Write', 10000);
+  writer.writeArray(sizes, (val, writer1) => writer1.writeString(val));
+  const keys: ('time' | 'num')[] = ['time', 'num'];
+  sizes.forEach((sizeKey) => {
+    keys.forEach((itemKey) => {
+      (['best', 'worst'] as ('best' | 'worst')[]).forEach((innerKey) => {
+        writer.writeArray(data[sizeKey]?.[itemKey]?.[innerKey] || [], (val, w1) => {
+          w1.writeArray(val, (val2, w2) => {
+            w2.writeBigUInt64(BigInt(val2));
+          });
+        });
+      });
+    });
+    writer.writeArray(data[sizeKey]?.latest || [], (val, w1) => {
+      w1.writeArray(val, (val2, w2) => {
+        w2.writeBigUInt64(BigInt(val2));
+      });
+    });
+    writer.writeUint32(data[sizeKey]?.count || 0);
+  });
+  localStorage.setItem('flipCardRecordData', writer.getRawDataStr());
+};
 if (localStorage.getItem('flipCardRecordData')) {
   recordJson = read();
-  if (localStorage.getItem('flipCardRecord')) {
-    localStorage.removeItem('flipCardRecord');
-  }
 } else {
   const recordStr = localStorage.getItem('flipCardRecord') || '{}';
   try {
@@ -372,6 +404,10 @@ if (localStorage.getItem('flipCardRecordData')) {
   } catch {
     /* empty */
   }
+  save(recordJson);
+}
+if (localStorage.getItem('flipCardRecord')) {
+  localStorage.removeItem('flipCardRecord');
 }
 localStorage.setItem('recordVersion', version.toString());
 
@@ -424,30 +460,6 @@ const createGame = (size: number) => {
   nextTick(() => {
     gameInfo.startTime = Date.now();
   });
-};
-const save = () => {
-  const sizes = ['4', '6', '8'];
-  const writer = new BinaryWriter('Write', 10000);
-  writer.writeArray(sizes, (val, writer1) => writer1.writeString(val));
-  const keys: ('time' | 'num')[] = ['time', 'num'];
-  sizes.forEach((sizeKey) => {
-    keys.forEach((itemKey) => {
-      (['best', 'worst'] as ('best' | 'worst')[]).forEach((innerKey) => {
-        writer.writeArray(record[sizeKey]?.[itemKey]?.[innerKey] || [], (val, w1) => {
-          w1.writeArray(val, (val2, w2) => {
-            w2.writeBigUInt64(BigInt(val2));
-          });
-        });
-      });
-    });
-    writer.writeArray(record[sizeKey]?.latest || [], (val, w1) => {
-      w1.writeArray(val, (val2, w2) => {
-        w2.writeBigUInt64(BigInt(val2));
-      });
-    });
-    writer.writeUint32(record[sizeKey]?.count || 0);
-  });
-  localStorage.setItem('flipCardRecordData', writer.getRawDataStr());
 };
 const win = () => {
   const now = Date.now();
@@ -521,7 +533,7 @@ const win = () => {
       count: 1,
     };
   }
-  save();
+  save(record);
   setTimeout(() => {
     scene.value = 'main';
     winVisible.value = true;
