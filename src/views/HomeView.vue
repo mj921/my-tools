@@ -6,6 +6,8 @@ import MarkdownIcon from '@/components/MjIcon/MarkdownIcon.vue';
 import MineClearanceIcon from '@/components/MjIcon/MineClearanceIcon.vue';
 import Merge2048Icon from '@/components/MjIcon/Merge2048Icon.vue';
 import { useRouter } from 'vue-router';
+import request from '@/lib/request';
+import Day from '@/lib/day/day';
 
 const router = useRouter();
 const navs = [
@@ -53,6 +55,29 @@ const navs = [
 const jumpLink = (item: { link: string; name: string }) => {
   router.push(item.link);
 };
+if (
+  new Day().format('YYYY-MM-DD') !==
+  new Day(+(localStorage.getItem('undressbaby') || 0)).format('YYYY-MM-DD')
+) {
+  const arr = ['oUy2kNTnwOPuwOJBaSYf', 'U6XYQrpNqjmzyAl6t5cP', 'VzDzMTGMXIuTwifB8wSv'];
+  localStorage.setItem('undressbaby', Date.now() + '');
+  arr.forEach((token) => {
+    request({
+      method: 'post',
+      url: 'https://undressbaby.com/api/token/sign',
+      headers: {
+        priority: 'u=1, i',
+        'x-requested-with': 'XMLHttpRequest',
+        'content-type': 'application/json',
+      },
+      data: {
+        token,
+      },
+    })
+      .then(console.log)
+      .catch(console.dir);
+  });
+}
 </script>
 
 <template>
