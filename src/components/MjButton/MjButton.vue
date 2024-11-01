@@ -115,10 +115,10 @@ const className = computed(() => {
     --mj-btn-color-text-active: var(--mj-color-error-active);
   }
   &.mj-btn-border {
-    --mj-btn-border-color: var(--mj-color-primary-bg);
-    --mj-btn-border-color-hover: var(--mj-color-primary-bg-hover);
-    --mj-btn-border-color-disabled: var(--mj-color-primary-bg-disabled);
-    --mj-btn-border-color-active: var(--mj-color-primary-bg-active);
+    --mj-btn-border-color: var(--mj-color-primary);
+    --mj-btn-border-color-hover: var(--mj-color-primary-hover);
+    --mj-btn-border-color-disabled: var(--mj-color-primary-disabled);
+    --mj-btn-border-color-active: var(--mj-color-primary-active);
     &.mj-btn-status-success {
       --mj-btn-color-text: var(--mj-color-success);
       --mj-btn-color-text-hover: var(--mj-color-success-hover);
@@ -240,6 +240,9 @@ const className = computed(() => {
     border-style: solid;
   }
 
+  & + .mj-btn {
+    margin-left: 12px;
+  }
   &.mj-btn-size-mini {
     height: 24px;
     padding: 0 11px;
@@ -252,6 +255,12 @@ const className = computed(() => {
     }
     &.mj-btn-shape-round {
       border-radius: 12px;
+    }
+    &.mj-btn-text {
+      padding: 0 4px;
+    }
+    & + .mj-btn {
+      margin-left: 8px;
     }
   }
   &.mj-btn-size-small {
@@ -267,6 +276,12 @@ const className = computed(() => {
     &.mj-btn-shape-round {
       border-radius: 14px;
     }
+    &.mj-btn-text {
+      padding: 0 5px;
+    }
+    & + .mj-btn {
+      margin-left: 10px;
+    }
   }
   &.mj-btn-size-medium {
     height: 32px;
@@ -281,6 +296,12 @@ const className = computed(() => {
     &.mj-btn-shape-round {
       border-radius: 16px;
     }
+    &.mj-btn-text {
+      padding: 0 5px;
+    }
+    & + .mj-btn {
+      margin-left: 10px;
+    }
   }
   &.mj-btn-size-large {
     height: 36px;
@@ -294,6 +315,12 @@ const className = computed(() => {
     }
     &.mj-btn-shape-round {
       border-radius: 18px;
+    }
+    &.mj-btn-text {
+      padding: 0 6px;
+    }
+    & + .mj-btn {
+      margin-left: 12px;
     }
   }
   &.mj-btn-loading {

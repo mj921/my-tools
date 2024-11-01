@@ -109,11 +109,7 @@ const onOkClick = () => {
   }
 };
 const onMaskClick = () => {
-  console.log(111);
-
   if (props.maskClosable) {
-    console.log(222);
-
     cancelHandle('mask');
   }
 };

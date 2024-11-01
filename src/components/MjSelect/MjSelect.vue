@@ -51,6 +51,7 @@ const emits = defineEmits<MjSelectEmits>();
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 14px;
+  width: 100%;
   &:focus {
     background-color: #eee;
   }

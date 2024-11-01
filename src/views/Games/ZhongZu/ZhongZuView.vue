@@ -32,26 +32,26 @@ import { nextTick } from 'vue';
 const columns = [
   {
     name: 'no',
-    label: '排名',
+    title: '排名',
     formatter: (val: any, row: any, i: number) => i + 1,
   },
   {
     name: 'name',
-    label: '种族',
+    title: '种族',
     slotName: 'name',
   },
   {
     name: 'power',
-    label: '战力',
+    title: '战力',
     formatter: (val: number) => Math.floor(val),
   },
   {
     name: 'num',
-    label: '数量',
+    title: '数量',
   },
   {
     name: 'levelList',
-    label: '境界详情',
+    title: '境界详情',
     slotName: 'levelList',
   },
 ];

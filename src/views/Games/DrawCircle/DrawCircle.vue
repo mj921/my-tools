@@ -109,30 +109,30 @@ const write = () => {
 const columnMap: Record<string, MjTableColumnProp> = {
   pi: {
     name: 'pi',
-    label: 'π',
+    title: 'π',
     align: 'center',
   },
   time: {
     name: 'time',
-    label: '日期',
+    title: '日期',
     formatter: (val: number) => dateFmt('YYYY-MM-DD HH:mm:ss', new Date(val)),
     width: 200,
     align: 'center',
   },
   score: {
     name: 'score',
-    label: '得分',
+    title: '得分',
     align: 'center',
   },
   max: {
     name: 'max',
-    label: '最佳得分',
+    title: '最佳得分',
     width: 100,
     align: 'center',
   },
   min: {
     name: 'min',
-    label: '最差得分',
+    title: '最差得分',
     width: 100,
     align: 'center',
   },

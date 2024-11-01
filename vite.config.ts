@@ -9,7 +9,7 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 export default defineConfig({
   base: process.env.NODE_ENV === 'development' ? '/' : '/my-tools/',
   server: {
-    host: true,
+    host: '0.0.0.0',
   },
   plugins: [vue(), vueJsx(), vueDevTools()],
   resolve: {

@@ -1,14 +1,25 @@
 <template>
   <label :class="`mj-checkbox mj-checkbox--${size}`">
-    <input v-model="model" type="checkbox" />{{ label }}
+    <input :checked="_checked" type="checkbox" @change="onChange" />
+    <span v-if="label">{{ label }}</span>
   </label>
 </template>
 <script lang="ts" setup>
-import type { MjCheckboxProps } from './interface';
+import { computed } from 'vue';
+import type { MjCheckboxEmits, MjCheckboxProps } from './interface';
 
+const props = withDefaults(defineProps<MjCheckboxProps>(), {
+  label: '',
+  size: 'small',
+  checked: false,
+});
 const model = defineModel<boolean>();
-
-withDefaults(defineProps<MjCheckboxProps>(), { label: '', size: 'small' });
+const _checked = computed(() => (typeof model.value === 'undefined' ? props.checked : model.value));
+const emits = defineEmits<MjCheckboxEmits>();
+const onChange = () => {
+  model.value = !_checked.value;
+  emits('change', model.value);
+};
 </script>
 <style scoped lang="scss">
 .mj-checkbox {
@@ -18,26 +29,26 @@ withDefaults(defineProps<MjCheckboxProps>(), { label: '', size: 'small' });
   user-select: none;
   &.mj-checkbox--mini {
     font-size: 12px;
-    input {
-      margin-right: 4px;
+    span {
+      margin-left: 4px;
     }
   }
   &.mj-checkbox--small {
     font-size: 14px;
-    input {
-      margin-right: 6px;
+    span {
+      margin-left: 6px;
     }
   }
   &.mj-checkbox--middle {
     font-size: 16px;
-    input {
-      margin-right: 8px;
+    span {
+      margin-left: 8px;
     }
   }
   &.mj-checkbox--large {
     font-size: 18px;
-    input {
-      margin-right: 10px;
+    span {
+      margin-left: 10px;
     }
   }
 }

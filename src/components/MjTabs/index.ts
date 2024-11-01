@@ -3,4 +3,6 @@ import MjTabPanel from './MjTabPanel.vue';
 
 MjTabs.Panel = MjTabPanel;
 
-export default MjTabs;
+export default Object.assign(MjTabs, {
+  Panel: MjTabPanel,
+});

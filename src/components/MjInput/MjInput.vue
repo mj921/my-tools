@@ -24,6 +24,7 @@ const emits = defineEmits<MjInputEmits>();
   outline: none;
   height: 30px;
   padding: 0 10px;
+  width: 100%;
   &:focus {
     background-color: #eee;
   }

@@ -1,6 +1,6 @@
 export interface RequestOptions {
   url: string;
-  method?: 'get' | 'post' | 'delete' | 'option' | 'put';
+  method?: 'get' | 'post' | 'delete' | 'options' | 'put' | 'patch';
   headers?: Record<string, string>;
   data: Record<string, any>;
   success?: (res?: any) => void;

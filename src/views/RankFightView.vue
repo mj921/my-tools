@@ -30,8 +30,8 @@ const currentIndex = ref(0);
 
 const columns = [
   { name: 'id' },
-  { label: '剩余防守次数', name: 'defTimes' },
-  { label: '进攻列表', name: 'attackList', slotName: 'attackList' },
+  { title: '剩余防守次数', name: 'defTimes' },
+  { title: '进攻列表', name: 'attackList', slotName: 'attackList' },
 ];
 
 const next = () => {

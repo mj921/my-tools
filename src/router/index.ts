@@ -126,6 +126,11 @@ const router = createRouter({
       name: 'game-drawcircle',
       component: () => import('../views/Games/DrawCircle/DrawCircle.vue'),
     },
+    {
+      path: '/tool/apitest',
+      name: 'tool-apitest',
+      component: () => import('../views/Tools/ApiTest/ApiTest.vue'),
+    },
   ],
 });
 
