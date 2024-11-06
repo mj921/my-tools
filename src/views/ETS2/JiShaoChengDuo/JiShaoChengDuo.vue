@@ -1,8 +1,198 @@
 <template>
-  <div class="api-test">
+  <div class="jishaochengduo">
     <div>
-      <mj-alert :message="`总里程：${sum.mileage}公里，总经验：${sum.exp}，${tip}`" />
-      <div class="api-test-btns">
+      <mj-alert
+        :message="`总里程：${sum.mileage}公里，总经验：${sum.exp}，剩余里程：${Math.max(0, 10000 - sum.mileage)}公里，总经验：${Math.max(0, 20000 - sum.exp)}，总共跑了${uuidList.length}趟`"
+      />
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag type="error">易碎</mj-tag>
+          <mj-tag type="warning">贵重</mj-tag>
+          <mj-tag type="success">特快</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(95) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(95).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(95) }}
+        </span>
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag type="error">易碎</mj-tag>
+          <mj-tag type="warning">贵重</mj-tag>
+          <mj-tag>普快</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(85) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(85).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(85) }}</span
+        >
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag type="error">易碎</mj-tag>
+          <mj-tag type="success">特快</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(77) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(77).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(77) }}</span
+        >
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag type="warning">贵重</mj-tag>
+          <mj-tag type="success">特快</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(73) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(73).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(73) }}</span
+        >
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag type="error">易碎</mj-tag>
+          <mj-tag>普快</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(67) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(67).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(67) }}</span
+        >
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag type="error">易碎</mj-tag>
+          <mj-tag type="warning">贵重</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(65) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(65).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(65) }}</span
+        >
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag type="warning">贵重</mj-tag>
+          <mj-tag>普快</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(63) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(63).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(63) }}</span
+        >
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag type="success">特快</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(55) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(55).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(55) }}</span
+        >
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+          <mj-tag>普快</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(45) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(45).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(45) }}</span
+        >
+      </div>
+      <div>
+        <div class="jishaochengduo-tags">
+          <mj-tag type="primary">长途</mj-tag>
+        </div>
+        <span
+          :class="[
+            'jishaochengduo-result',
+            getTip(25) === '失败'
+              ? 'jishaochengduo-result-error'
+              : getTip(25).substring(0, 4) === '可能失败'
+                ? 'jishaochengduo-result-warning'
+                : 'jishaochengduo-result-success',
+          ]"
+        >
+          {{ getTip(25) }}</span
+        >
+      </div>
+      <div class="jishaochengduo-btns">
         <mj-button type="primary" @click="add">添加</mj-button>
       </div>
       <mj-table
@@ -13,6 +203,7 @@
       >
         <template #operation="{ row }">
           <mj-button type="text" status="normal" size="small" @click="edit(row)">编辑</mj-button>
+          <mj-button type="text" status="normal" size="small" @click="copy(row)">复制</mj-button>
           <mj-button type="text" status="danger" size="small" @click="del(row)">删除</mj-button>
         </template>
       </mj-table>
@@ -46,6 +237,7 @@ import BinaryWriter from '@/lib/saver/BinaryWriter';
 import { generateUuid } from '@/utils';
 import { computed, ref, watch } from 'vue';
 import MjAlert from '@/components/MjAlert/MjAlert.vue';
+import MjTag from '@/components/MjTag/MjTag.vue';
 interface RecordData {
   mileage: number;
   exp: number;
@@ -65,6 +257,8 @@ const uuidList = ref<string[]>([]);
 const addType = ref<'add' | 'edit'>('add');
 const dataMap = ref<Record<string, RecordData>>({});
 
+// 长途 25 易碎 22 贵重 18 普快 20 特快30
+
 const sum = computed(() => {
   return uuidList.value.reduce(
     (prev, uuid) => ({
@@ -77,17 +271,19 @@ const sum = computed(() => {
     },
   );
 });
-const tip = computed(() => {
+const getTip = (bonus = 95, changtu = true) => {
   if (sum.value.exp >= 20000) return '完成';
   if (sum.value.mileage >= 10000) return '失败';
   const surplusMileage = 10000 - sum.value.mileage;
   const surplusExp = 20000 - sum.value.exp;
-  const ratio = ((surplusExp - surplusMileage) * 100) / surplusMileage - 95;
+  const ratio = ((surplusExp - surplusMileage) * 100) / surplusMileage - bonus;
   if (ratio <= 0) return `>=250公里`;
-  const maxMileage = (40 * 100) / ratio;
-  if (maxMileage < 250) return `失败`;
-  return `250公里 ~ ${Math.floor(maxMileage)}公里`;
-});
+  const maxMileage90 = (90 * 100) / ratio;
+  if (maxMileage90 < 250) return `失败`;
+  const maxMileage40 = (40 * 100) / ratio;
+  if (maxMileage40 < 250) return `可能失败，250公里 ~ ${Math.floor(maxMileage90)}公里`;
+  return `250公里 ~ ${Math.floor(maxMileage40)}公里`;
+};
 const columns = [
   {
     title: '里程',
@@ -153,6 +349,11 @@ const edit = (row: RecordData) => {
   addVisible.value = true;
   formData.value = { ...row, mileage: row.mileage.toString(), exp: row.exp.toString() };
 };
+const copy = (row: RecordData) => {
+  addType.value = 'add';
+  addVisible.value = true;
+  formData.value = { ...row, uuid: '', mileage: row.mileage.toString(), exp: row.exp.toString() };
+};
 const load = () => {
   const reader = new BinaryWriter('Read', 1);
   const dataStr = localStorage.getItem('ets2_JSCD');
@@ -205,9 +406,26 @@ const onSelectionChange = (rowKeys: (string | number)[]) => {
 };
 </script>
 <style scoped lang="scss">
-.api-test {
-  padding: 20px;
-  .api-test-btns {
+.jishaochengduo {
+  padding: 10px;
+  .jishaochengduo-tags {
+    display: inline-block;
+    margin-bottom: 8px;
+    min-width: 115px;
+  }
+  .jishaochengduo-result {
+    margin-left: 8px;
+    &.jishaochengduo-result-success {
+      color: var(--mj-color-success-6);
+    }
+    &.jishaochengduo-result-warning {
+      color: var(--mj-color-warning-6);
+    }
+    &.jishaochengduo-result-error {
+      color: var(--mj-color-error-6);
+    }
+  }
+  .jishaochengduo-btns {
     margin-bottom: 16px;
   }
 }
