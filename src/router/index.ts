@@ -131,6 +131,11 @@ const router = createRouter({
       name: 'tool-apitest',
       component: () => import('../views/Tools/ApiTest/ApiTest.vue'),
     },
+    {
+      path: '/ets2/jishaochengduo',
+      name: 'ets2-jishaochengduo',
+      component: () => import('../views/ETS2/JiShaoChengDuo/JiShaoChengDuo.vue'),
+    },
   ],
 });
 

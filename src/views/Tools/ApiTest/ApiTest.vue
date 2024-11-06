@@ -252,8 +252,6 @@ const toggleSaveLocal = () => {
 const del = (row: ApiData) => {
   delete apiMap.value[row.uuid];
   apiList.value = apiList.value.filter((el) => el !== row.uuid);
-  console.log(apiList.value);
-
   if (row.saveLocal) {
     save();
   }

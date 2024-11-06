@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { useRouter } from 'vue-router';
 import FlipCardIcon from '@/components/MjIcon/FlipCardIcon.vue';
 import AnimationIcon from '@/components/MjIcon/AnimationIcon.vue';
 import CssSpriteIcon from '@/components/MjIcon/CssSpriteIcon.vue';
 import MarkdownIcon from '@/components/MjIcon/MarkdownIcon.vue';
 import MineClearanceIcon from '@/components/MjIcon/MineClearanceIcon.vue';
 import Merge2048Icon from '@/components/MjIcon/Merge2048Icon.vue';
-import { useRouter } from 'vue-router';
+import DrawCircleIcon from '@/components/MjIcon/DrawCircleIcon.vue';
+import ETS2Icon from '@/components/MjIcon/ETS2Icon.vue';
 
 const router = useRouter();
 const navs = [
@@ -48,9 +50,19 @@ const navs = [
         name: '2048',
       },
       {
-        logo: Merge2048Icon,
+        logo: DrawCircleIcon,
         link: '/game/drawcircle',
         name: 'drawcircle',
+      },
+    ],
+  },
+  {
+    title: 'ETS2',
+    children: [
+      {
+        logo: ETS2Icon,
+        link: '/ets2/jishaochengduo',
+        name: '积少成多',
       },
     ],
   },
@@ -166,6 +178,35 @@ const jumpLink = (item: { link: string; name: string }) => {
             &::before {
               transform: scale(1);
             }
+          }
+        }
+      }
+    }
+  }
+}
+@media screen and (max-width: 750px) {
+  .home {
+    padding: 20px;
+    min-width: auto;
+    .home-box {
+      width: 100%;
+      .nav-box {
+        .nav-list {
+          .nav-item {
+            width: calc(50% - 8px);
+          }
+        }
+      }
+    }
+  }
+}
+@media screen and (max-width: 500px) {
+  .home {
+    .home-box {
+      .nav-box {
+        .nav-list {
+          .nav-item {
+            width: 100%;
           }
         }
       }
