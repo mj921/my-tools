@@ -41,3 +41,8 @@ const fallbackCopyTextToClipboard = (text: string, cb?: () => void) => {
 export const generateUuid = () =>
   'xxxxxxxx-xxxx-xxxx-xxxx-xxxxx'.replace(/x/g, () => ((Math.random() * 16) | 0).toString(16)) +
   Date.now().toString(16);
+export const sleep = (time = 0) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(true), time);
+  });
+};

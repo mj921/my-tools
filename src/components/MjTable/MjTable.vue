@@ -58,6 +58,14 @@
               :row="row"
               :index="$index"
             ></slot>
+            <template v-else-if="column.render">
+              <Component
+                :is="column.render"
+                :record="data[$index]"
+                :value="(data[$index] as any)[column.name]"
+                :index="$index"
+              />
+            </template>
             <template v-else>{{
               (column.formatter
                 ? column.formatter((data[$index] as any)[column.name], row, $index)

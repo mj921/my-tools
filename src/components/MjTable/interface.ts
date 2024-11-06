@@ -1,4 +1,6 @@
-export interface MjTableColumnProp {
+import type { VNode } from 'vue';
+
+export interface MjTableColumnProp<T> {
   width?: number;
   minWidth?: number;
   title?: string;
@@ -6,6 +8,7 @@ export interface MjTableColumnProp {
   slotName?: string;
   align?: 'left' | 'center' | 'right';
   formatter?: (value: any, row: any, i: number) => any;
+  render?: (props: { record: T; value: any; index: number }) => VNode;
 }
 
 export interface MjTableRowSelection {
@@ -17,7 +20,7 @@ export interface MjTableRowSelection {
 }
 
 export interface MjTableProps<T> {
-  columns: MjTableColumnProp[];
+  columns: MjTableColumnProp<T>[];
   data: T[];
   primaryKey?: keyof T;
   tdDefaultValue?: string;

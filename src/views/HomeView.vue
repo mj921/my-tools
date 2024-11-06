@@ -47,6 +47,11 @@ const navs = [
         link: '/game/2048',
         name: '2048',
       },
+      {
+        logo: Merge2048Icon,
+        link: '/game/drawcircle',
+        name: 'drawcircle',
+      },
     ],
   },
 ];

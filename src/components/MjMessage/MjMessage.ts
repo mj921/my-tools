@@ -6,27 +6,7 @@ import CloseCircleFillIcon from '../MjIcon/CloseCircleFillIcon.vue';
 import InfoCircleFillIcon from '../MjIcon/InfoCircleFillIcon.vue';
 import WarningCircleFillIcon from '../MjIcon/WarningCircleFillIcon.vue';
 import CheckCircleFillIcon from '../MjIcon/CheckCircleFillIcon.vue';
-
-const MjMessage = defineComponent({
-  props: {
-    content: {
-      type: String,
-      required: true,
-    },
-    icon: {
-      type: Object as PropType<RenderFunction>,
-      required: true,
-    },
-  },
-  setup({ content, icon }) {
-    return () => {
-      return h('div', { className: 'mj-message' }, [
-        h('div', { className: 'mj-messsage-icon' }, [icon?.()]),
-        h('div', { className: 'mj-messsage-content' }, content),
-      ]);
-    };
-  },
-});
+import MjMessage from './MjMessage.vue';
 
 const message = (config: string | MjMessageConfig) => {
   if (typeof config === 'string') {

@@ -6,11 +6,11 @@
       </div>
       <canvas ref="canvas" width="400" height="400"></canvas>
       <div class="draw-circle-dialog" v-show="dialogVisible">
-        <div class="draw-circle-score-curr">{{ scores[radiusIndex] }}</div>
+        <div class="draw-circle-score-curr">{{ (scores[radiusIndex] || 0).toFixed(2) }}</div>
         <div class="draw-circle-pi">π={{ pis[radiusIndex] }}</div>
         <div class="draw-circle-message" :style="{ opacity: isError ? 1 : 0 }">这根本不是圆！</div>
         <mj-button type="primary" status="danger" @click="nextInit">{{
-          isError ? '重画' : radiusIndex === 4 ? '查看分数' : '下一个'
+          isError ? '重画' : radiusIndex === 4 ? '再来一次' : '下一个'
         }}</mj-button>
       </div>
     </div>
@@ -31,12 +31,14 @@
 </template>
 <script lang="ts" setup>
 import MjButton from '@/components/MjButton/MjButton.vue';
+import message from '@/components/MjMessage';
 import MjTable from '@/components/MjTable/MjTable.vue';
 import type { MjTableColumnProp } from '@/components/MjTable/interface';
 import MjTabs from '@/components/MjTabs';
 import BinaryWriter from '@/lib/saver/BinaryWriter';
+import { sleep } from '@/utils';
 import { dateFmt } from '@/utils/date';
-import { computed, onMounted, ref } from 'vue';
+import { computed, h, onMounted, ref } from 'vue';
 
 const MjTabPanel = MjTabs.Panel;
 
@@ -48,6 +50,41 @@ interface Point {
 type RecordItem = { pi?: number; time: number; score: number; max?: number; min?: number };
 
 type HistoryRecord = Record<'pi' | 'score' | 'maxScore', RecordItem[]>;
+
+const avgEvaluate: [number, string][] = [
+  [95, '画圆大神'],
+  [90, '画圆大师'],
+  [85, '画圆大王'],
+  [80, '画圆高手'],
+  [75, '平均水平'],
+  [70, '低于平均'],
+];
+const scoreColor: [number, string][] = [
+  [95, '#f00'],
+  [90, '#ffa500'],
+  [85, '#ae00ff'],
+  [80, '#0085ff'],
+  [75, '#26ef26'],
+  [70, '#000'],
+];
+
+const getEvaluate = (val: number) => {
+  for (let i = 0; i < avgEvaluate.length; i++) {
+    if (val >= avgEvaluate[i][0]) {
+      return avgEvaluate[i][1];
+    }
+  }
+  return '这是圆吗';
+};
+
+const getColor = (val: number) => {
+  for (let i = 0; i < scoreColor.length; i++) {
+    if (val >= scoreColor[i][0]) {
+      return scoreColor[i][1];
+    }
+  }
+  return '#000';
+};
 
 const historyRecord = ref<HistoryRecord>({
   pi: [],
@@ -106,11 +143,12 @@ const write = () => {
   localStorage.setItem('game-drawcircle', writer.getRawDataStr());
 };
 
-const columnMap: Record<string, MjTableColumnProp> = {
+const columnMap: Record<string, MjTableColumnProp<RecordItem>> = {
   pi: {
     name: 'pi',
     title: 'π',
     align: 'center',
+    formatter: (val: number) => val.toFixed(7),
   },
   time: {
     name: 'time',
@@ -123,18 +161,24 @@ const columnMap: Record<string, MjTableColumnProp> = {
     name: 'score',
     title: '得分',
     align: 'center',
+    render: ({ value }: { value: number }) =>
+      h('span', { style: { color: getColor(value) } }, [value.toFixed(2)]),
   },
   max: {
     name: 'max',
     title: '最佳得分',
     width: 100,
     align: 'center',
+    render: ({ value }: { value: number }) =>
+      h('span', { style: { color: getColor(value) } }, [value.toFixed(2)]),
   },
   min: {
     name: 'min',
     title: '最差得分',
     width: 100,
     align: 'center',
+    render: ({ value }: { value: number }) =>
+      h('span', { style: { color: getColor(value) } }, [value.toFixed(2)]),
   },
 };
 
@@ -157,6 +201,7 @@ const ctx = ref<CanvasRenderingContext2D>();
 const points = ref<{ x: number; y: number }[]>([]);
 const radiusIndex = ref(0);
 const isDown = ref(false);
+const canDraw = ref(true);
 const dialogVisible = ref(false);
 const isError = ref(false);
 const scores = ref<number[]>([]);
@@ -180,7 +225,9 @@ const intersect = (
   /** 分母 */
   let denominator = 0;
   denominator = (y2 - y1) * (endX - startX) - (x2 - x1) * (endY - startY);
-  if (denominator === 0) return false;
+  if (denominator === 0) {
+    return false;
+  }
   let d = ((x2 - x1) * (startY - y1) - (y2 - y1) * (startX - x1)) / denominator,
     l = ((endX - startX) * (startY - y1) - (endY - startY) * (startX - x1)) / denominator;
   if (!(d < 0 || d > 1 || l < 0 || l > 1)) {
@@ -196,22 +243,42 @@ const getDistance = (p1: Point, p2: Point) => {
     dy = p1.y - p2.y;
   return Math.sqrt(dx * dx + dy * dy);
 };
-const calculateError = (diffPoints: Point[][], radius: number) => {
+const calculateError = async (diffPoints: (Point | null)[][], radius: number, len: number) => {
   let t = 0;
   for (let i = 0; i < diffPoints.length; i++) {
     const item = diffPoints[i];
-    t += getDistance(item[0], item[1]) / (radius / 2);
+    if (item[0] && item[1]) {
+      t += getDistance(item[0], item[1]) / (radius / 2);
+    }
   }
-  const currentScore = (100 - (t / diffPoints.length) * 100).toFixed(2);
+  const currentScore = 100 - (t / diffPoints.length) * 100;
   scores.value.push(Number(currentScore));
   if (ctx.value) {
-    ctx.value.strokeStyle = 'black';
-    diffPoints.forEach(([cPoint, dPoint]) => {
-      ctx.value!.beginPath();
-      ctx.value!.moveTo(cPoint.x, cPoint.y);
-      ctx.value!.lineTo(dPoint.x, dPoint.y);
-      ctx.value!.stroke();
-    });
+    let i = 0;
+    const drawLine = async () => {
+      const el = diffPoints[i];
+      if (el[0]) {
+        const [cPoint, dPoint] = el as Point[];
+        ctx.value!.strokeStyle = 'black';
+        ctx.value!.beginPath();
+        ctx.value!.moveTo(cPoint.x, cPoint.y);
+        ctx.value!.lineTo(dPoint.x, dPoint.y);
+        ctx.value!.stroke();
+      } else {
+        const [, cPoint, dPoint] = el as Point[];
+        ctx.value!.strokeStyle = 'red';
+        ctx.value!.beginPath();
+        ctx.value!.moveTo(cPoint.x, cPoint.y);
+        ctx.value!.lineTo(dPoint.x, dPoint.y);
+        ctx.value!.stroke();
+      }
+      i++;
+      if (i < diffPoints.length) {
+        await sleep(16);
+        await drawLine();
+      }
+    };
+    await drawLine();
     ctx.value.strokeStyle = 'red';
   }
 };
@@ -222,12 +289,12 @@ const avgScore = computed(() =>
     : 0,
 );
 
-const findDifferences = () => {
+const findDifferences = async () => {
   const maxRadius = canvasWidth / 2;
   const radius = radiusList[radiusIndex.value];
   let i = 130;
   const n = 360 / totalVerifyingLines;
-  const diffPoints: Point[][] = [];
+  const diffPoints: (Point | null)[][] = [];
   isError.value = false;
   for (; -230 !== i; ) {
     const xRatio = Math.sin(i * (Math.PI / 180)),
@@ -237,9 +304,9 @@ const findDifferences = () => {
       cx = centerPoint.x + radius * xRatio,
       cy = centerPoint.y + radius * yRatio;
     let flag = true;
-    for (let ti = 0; ti < points.value.length - 1; ti++) {
+    for (let ti = 0; ti < points.value.length; ti++) {
       const el = points.value[ti],
-        nextEl = points.value[ti + 1],
+        nextEl = points.value[ti === points.value.length - 1 ? 0 : ti + 1],
         n = intersect(centerPoint.x, centerPoint.y, maxCx, maxCy, el.x, el.y, nextEl.x, nextEl.y);
       if (n) {
         flag = false;
@@ -252,11 +319,11 @@ const findDifferences = () => {
     }
     if (flag) {
       isError.value = true;
-      return;
+      diffPoints.push([null, { ...centerPoint }, { x: maxCx, y: maxCy }]);
     }
     i -= n;
   }
-  calculateError(diffPoints, radius);
+  await calculateError(diffPoints, radius, 180);
 };
 
 const calcPI = (e = 5) => {
@@ -299,6 +366,13 @@ const init = () => {
     ctx.value.strokeStyle = 'red';
   }
 };
+const restart = () => {
+  dialogVisible.value = false;
+  radiusIndex.value = 0;
+  scores.value = [];
+  pis.value = [];
+  init();
+};
 const nextInit = () => {
   if (radiusIndex.value < 4) {
     if (!isError.value) {
@@ -306,23 +380,32 @@ const nextInit = () => {
     }
     dialogVisible.value = false;
     init();
+  } else {
+    restart();
   }
 };
 const onMouseDown = (e: MouseEvent) => {
-  isDown.value = true;
-  points.value.push({
-    x: e.clientX - canvasBcr.value.left,
-    y: e.clientY - canvasBcr.value.top,
-  });
+  if (canDraw.value) {
+    isDown.value = true;
+    canDraw.value = false;
+    points.value.push({
+      x: e.clientX - canvasBcr.value.left,
+      y: e.clientY - canvasBcr.value.top,
+    });
+  }
 };
 const onMouseMove = (e: MouseEvent) => {
   if (isDown.value) {
     const lastPoint = points.value[points.value.length - 1];
     const newPoint = {
-      x: e.clientX - canvasBcr.value.left,
-      y: e.clientY - canvasBcr.value.top,
+      x: e.clientX - canvasBcr.value.left + Math.random() * 0.01 * (Math.random() > 0.5 ? 1 : -1),
+      y: e.clientY - canvasBcr.value.top + Math.random() * 0.01 * (Math.random() > 0.5 ? 1 : -1),
     };
-    if (Math.sqrt((lastPoint.x - newPoint.x) ** 2 + (lastPoint.y - newPoint.y) ** 2) > 2) {
+    const d = Math.sqrt(
+      (lastPoint.x - newPoint.x) * (lastPoint.x - newPoint.x) +
+        (lastPoint.y - newPoint.y) * (lastPoint.y - newPoint.y),
+    );
+    if (d > 0) {
       points.value.push(newPoint);
       ctx.value!.beginPath();
       ctx.value!.moveTo(lastPoint.x, lastPoint.y);
@@ -332,6 +415,7 @@ const onMouseMove = (e: MouseEvent) => {
   }
 };
 const finish = () => {
+  message.success(`${getEvaluate(avgScore.value)}`);
   const max = Math.max(...scores.value);
   const min = Math.min(...scores.value);
   const time = Date.now();
@@ -369,7 +453,7 @@ const finish = () => {
   historyRecord.value.maxScore = historyRecord.value.maxScore.slice(0, 10);
   write();
 };
-const onMouseUp = () => {
+const onMouseUp = async () => {
   if (isDown.value) {
     isDown.value = false;
     const lastPoint = points.value[points.value.length - 1];
@@ -383,7 +467,8 @@ const onMouseUp = () => {
     ctx.value!.arc(canvasWidth / 2, canvasWidth / 2, radiusList[radiusIndex.value], 0, Math.PI * 2);
     ctx.value!.stroke();
     ctx.value!.strokeStyle = 'red';
-    findDifferences();
+    await findDifferences();
+    canDraw.value = true;
     if (!isError.value) {
       const PI = calcPI();
       pis.value.push(PI);
