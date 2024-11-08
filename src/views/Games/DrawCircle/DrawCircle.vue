@@ -402,6 +402,7 @@ const nextInit = () => {
 };
 const onMouseDown = (e: MouseEvent) => {
   if (canDraw.value) {
+    canvasBcr.value = canvas.value?.getBoundingClientRect()!;
     isDown.value = true;
     canDraw.value = false;
     points.value.push({
