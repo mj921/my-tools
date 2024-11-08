@@ -162,8 +162,6 @@ const read = () => {
       return obj;
     });
   });
-  console.log(record);
-
   historyRecord.value = { ...historyRecord.value, ...record };
 };
 const write = () => {
