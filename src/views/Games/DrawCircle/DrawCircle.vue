@@ -38,6 +38,9 @@
         <mj-tab-panel title="单次分数" key="maxScore">
           <mj-table :columns="maxColumns" :data="historyRecord.maxScore" />
         </mj-tab-panel>
+        <mj-tab-panel v-for="r in radiusList" :title="`半径${r}`" :key="`radius${r}`">
+          <mj-table :columns="radiusColumns" :data="historyRecord[`radius${r}`]" />
+        </mj-tab-panel>
       </mj-tabs>
     </div>
   </div>
@@ -60,9 +63,16 @@ interface Point {
   y: number;
 }
 
-type RecordItem = { pi?: number; time: number; score: number; max?: number; min?: number };
+type RecordItem = {
+  pi?: number;
+  time: number;
+  score: number;
+  max?: number;
+  min?: number;
+  radius?: number;
+};
 
-type HistoryRecord = Record<'pi' | 'score' | 'maxScore', RecordItem[]>;
+type HistoryRecord = Record<string, RecordItem[]>;
 
 const avgEvaluate: [number, string][] = [
   [95, '画圆大神'],
@@ -80,6 +90,13 @@ const scoreColor: [number, string][] = [
   [75, '#26ef26'],
   [70, '#000'],
 ];
+const canvasWidth = 400;
+const totalVerifyingLines = 180;
+const centerPoint = {
+  x: canvasWidth / 2,
+  y: canvasWidth / 2,
+};
+const radiusList = [60, 70, 80, 90, 100];
 
 const getEvaluate = (val: number) => {
   for (let i = 0; i < avgEvaluate.length; i++) {
@@ -98,12 +115,19 @@ const getColor = (val: number) => {
   }
   return '#000';
 };
+const defaultValue = radiusList.reduce(
+  (prev, r) => ({
+    ...prev,
+    [`radius${r}`]: [],
+  }),
+  {
+    pi: [],
+    score: [],
+    maxScore: [],
+  },
+);
 
-const historyRecord = ref<HistoryRecord>({
-  pi: [],
-  score: [],
-  maxScore: [],
-});
+const historyRecord = ref<HistoryRecord>(defaultValue);
 
 const read = () => {
   const str = localStorage.getItem('game-drawcircle') || '';
@@ -115,17 +139,22 @@ const read = () => {
     score: [],
     maxScore: [],
   };
-  const keys: (keyof HistoryRecord)[] = ['pi', 'score', 'maxScore'];
+  const keys = ['pi', 'score', 'maxScore'].concat(radiusList.map((r) => `radius${r}`));
+  reader.readInt16();
   keys.forEach((key) => {
     record[key] = reader.readArray((reader1: BinaryWriter) => {
       const obj: RecordItem = { pi: 0, time: 0, score: 0, max: 0, min: 0 };
       (
         (key === 'score'
           ? ['time', 'score', 'max', 'min']
-          : ['score', 'pi', 'time']) as (keyof RecordItem)[]
+          : key === 'maxScore' || key === 'pi'
+            ? ['score', 'pi', 'time', 'radius']
+            : ['score', 'pi', 'time']) as (keyof RecordItem)[]
       ).forEach((k) => {
         if (k === 'time') {
           obj[k] = Number(reader1.readBigUint64());
+        } else if (k === 'radius') {
+          obj[k] = reader1.readInt16();
         } else {
           obj[k] = reader1.readFloat64();
         }
@@ -133,20 +162,27 @@ const read = () => {
       return obj;
     });
   });
-  historyRecord.value = record;
+  console.log(record);
+
+  historyRecord.value = { ...historyRecord.value, ...record };
 };
 const write = () => {
   const writer = new BinaryWriter('Write', 10000);
-  const keys: (keyof HistoryRecord)[] = ['pi', 'score', 'maxScore'];
+  writer.writeInt16(1);
+  const keys = ['pi', 'score', 'maxScore'].concat(radiusList.map((r) => `radius${r}`));
   keys.forEach((key) => {
     writer.writeArray([...historyRecord.value[key]], (obj: RecordItem, writer1: BinaryWriter) => {
       (
         (key === 'score'
           ? ['time', 'score', 'max', 'min']
-          : ['score', 'pi', 'time']) as (keyof RecordItem)[]
+          : key === 'maxScore' || key === 'pi'
+            ? ['score', 'pi', 'time', 'radius']
+            : ['score', 'pi', 'time']) as (keyof RecordItem)[]
       ).forEach((k) => {
         if (k === 'time') {
           writer1.writeBigUInt64(BigInt(obj[k]));
+        } else if (k === 'radius') {
+          writer1.writeInt16(obj[k] || 0);
         } else {
           writer1.writeFloat64(obj[k]!);
         }
@@ -193,21 +229,27 @@ const columnMap: Record<string, MjTableColumnProp<RecordItem>> = {
     render: ({ value }: { value: number }) =>
       h('span', { style: { color: getColor(value) } }, [value.toFixed(2)]),
   },
+  radius: {
+    name: 'radius',
+    title: '半径',
+    width: 100,
+    align: 'center',
+    formatter: (val: number) => val || '-',
+  },
 };
 
-const piColumns = (['pi', 'time', 'score'] as (keyof RecordItem)[]).map((key) => columnMap[key]);
+const piColumns = (['pi', 'time', 'score', 'radius'] as (keyof RecordItem)[]).map(
+  (key) => columnMap[key],
+);
 const scoreColumns = (['score', 'time', 'max', 'min'] as (keyof RecordItem)[]).map(
   (key) => columnMap[key],
 );
-const maxColumns = (['score', 'time', 'pi'] as (keyof RecordItem)[]).map((key) => columnMap[key]);
-
-const canvasWidth = 400;
-const totalVerifyingLines = 180;
-const centerPoint = {
-  x: canvasWidth / 2,
-  y: canvasWidth / 2,
-};
-const radiusList = [60, 70, 80, 90, 100];
+const maxColumns = (['score', 'time', 'pi', 'radius'] as (keyof RecordItem)[]).map(
+  (key) => columnMap[key],
+);
+const radiusColumns = (['score', 'time', 'pi'] as (keyof RecordItem)[]).map(
+  (key) => columnMap[key],
+);
 
 const canvas = ref<HTMLCanvasElement>();
 const ctx = ref<CanvasRenderingContext2D>();
@@ -441,6 +483,7 @@ const finish = () => {
       pi: el,
       time,
       score: scores.value[i],
+      radius: radiusList[i],
     })),
   );
   historyRecord.value.pi.sort((a, b) =>
@@ -462,12 +505,24 @@ const finish = () => {
       pi: el,
       time,
       score: scores.value[i],
+      radius: radiusList[i],
     })),
   );
   historyRecord.value.maxScore.sort((a, b) =>
     b.score === a.score ? a.time - b.time : b.score - a.score,
   );
   historyRecord.value.maxScore = historyRecord.value.maxScore.slice(0, 10);
+  radiusList.forEach((r, i) => {
+    historyRecord.value[`radius${r}`].push({
+      pi: pis.value[i],
+      time,
+      score: scores.value[i],
+    });
+    historyRecord.value[`radius${r}`].sort((a, b) =>
+      b.score === a.score ? a.time - b.time : b.score - a.score,
+    );
+    historyRecord.value[`radius${r}`] = historyRecord.value[`radius${r}`].slice(0, 10);
+  });
   write();
 };
 const onMouseUp = async () => {
