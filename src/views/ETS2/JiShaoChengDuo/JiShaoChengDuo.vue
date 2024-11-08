@@ -271,7 +271,7 @@ const sum = computed(() => {
     },
   );
 });
-const getTip = (bonus = 95, changtu = true) => {
+const getTip = (bonus = 95) => {
   if (sum.value.exp >= 20000) return '完成';
   if (sum.value.mileage >= 10000) return '失败';
   const surplusMileage = 10000 - sum.value.mileage;

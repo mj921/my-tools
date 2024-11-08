@@ -6,12 +6,25 @@
       </div>
       <canvas ref="canvas" width="400" height="400"></canvas>
       <div class="draw-circle-dialog" v-show="dialogVisible">
-        <div class="draw-circle-score-curr">{{ (scores[radiusIndex] || 0).toFixed(2) }}</div>
-        <div class="draw-circle-pi">π={{ pis[radiusIndex] }}</div>
+        <div class="draw-circle-score-curr" :style="{ opacity: isError ? 0 : 1 }">
+          {{ (scores[radiusIndex] || 0).toFixed(2) }}
+        </div>
+        <div class="draw-circle-pi" :style="{ opacity: isError ? 0 : 1 }">
+          π={{ pis[radiusIndex] }}
+        </div>
         <div class="draw-circle-message" :style="{ opacity: isError ? 1 : 0 }">这根本不是圆！</div>
         <mj-button type="primary" status="danger" @click="nextInit">{{
           isError ? '重画' : radiusIndex === 4 ? '再来一次' : '下一个'
         }}</mj-button>
+      </div>
+      <div class="draw-curcle-curr-record">
+        <dl
+          v-for="(score, i) in scores.slice(0, radiusIndex)"
+          :key="`curr-${i}`"
+          :style="{ color: getColor(score) }"
+        >
+          {{ score.toFixed(2) }}
+        </dl>
       </div>
     </div>
     <div class="draw-circle-record">
@@ -74,7 +87,7 @@ const getEvaluate = (val: number) => {
       return avgEvaluate[i][1];
     }
   }
-  return '这是圆吗';
+  return '差距太大';
 };
 
 const getColor = (val: number) => {
@@ -243,16 +256,19 @@ const getDistance = (p1: Point, p2: Point) => {
     dy = p1.y - p2.y;
   return Math.sqrt(dx * dx + dy * dy);
 };
-const calculateError = async (diffPoints: (Point | null)[][], radius: number, len: number) => {
-  let t = 0;
-  for (let i = 0; i < diffPoints.length; i++) {
-    const item = diffPoints[i];
-    if (item[0] && item[1]) {
-      t += getDistance(item[0], item[1]) / (radius / 2);
+const calculateError = async (diffPoints: (Point | null)[][], radius: number) => {
+  if (!isError.value) {
+    let t = 0;
+    for (let i = 0; i < diffPoints.length; i++) {
+      const item = diffPoints[i];
+      if (item[0] && item[1]) {
+        t += getDistance(item[0], item[1]) / (radius / 2);
+      }
     }
+
+    const currentScore = 100 - (t / diffPoints.length) * 100;
+    scores.value.push(Number(currentScore));
   }
-  const currentScore = 100 - (t / diffPoints.length) * 100;
-  scores.value.push(Number(currentScore));
   if (ctx.value) {
     let i = 0;
     const drawLine = async () => {
@@ -323,7 +339,7 @@ const findDifferences = async () => {
     }
     i -= n;
   }
-  await calculateError(diffPoints, radius, 180);
+  await calculateError(diffPoints, radius);
 };
 
 const calcPI = (e = 5) => {
@@ -540,6 +556,26 @@ onMounted(() => {
       }
       .mj-btn {
         margin-top: 8px;
+      }
+    }
+    .draw-curcle-curr-record {
+      position: absolute;
+      left: 404px;
+      top: 0;
+      height: 404px;
+      display: flex;
+      align-items: start;
+      justify-content: center;
+      flex-direction: column;
+      padding-left: 20px;
+      counter-reset: no 0;
+      dl {
+        counter-increment: no;
+        &::before {
+          content: counter(no) '.';
+          margin-right: 8px;
+          font-weight: bold;
+        }
       }
     }
   }
