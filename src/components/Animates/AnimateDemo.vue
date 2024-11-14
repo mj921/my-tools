@@ -90,19 +90,34 @@
     <div class="animate-demo">
       <div class="animate-btns">
         <img src="@/assets/icons/reload.svg" @click="reloadAnimate" />
-        <img src="@/assets/icons/code.svg" />
+        <img src="@/assets/icons/code.svg" @click="codeVisible = true" />
       </div>
-      <div class="animate-object" :key="animateKey" :style="animateStyle"></div>
+      <div ref="animateObj" class="animate-object" :key="animateKey" :style="animateStyle"></div>
     </div>
+    <mj-modal
+      v-model="codeVisible"
+      @cancel="codeVisible = false"
+      :footer="false"
+      title="动画代码"
+      :width="640"
+      titleAlign="start"
+    >
+      <mj-pre
+        :value="`.${props.animateName} {animation: ${animateStyle.animation};} ${(animateInject!.keyframesRules[props.animateName] || []).map((el) => el.css).join(' ')}`"
+        lang="css"
+      />
+    </mj-modal>
   </div>
 </template>
 <script lang="ts" setup>
-import { reactive, nextTick, ref } from 'vue';
+import { inject, reactive, ref } from 'vue';
 import MjSelect from '@/components/MjSelect/MjSelect.vue';
 import MjInput from '@/components/MjInput/MjInput.vue';
 import MjCheckbox from '@/components/MjCheckbox/MjCheckbox.vue';
 import { timeFunctionOptions, directionOptions, fillModeOptions } from './config';
 import { computed } from 'vue';
+import MjPre from '../MjPre/MjPre.vue';
+import MjModal from '../MjModal/MjModal.vue';
 
 export interface AnimateDemoProps {
   animateName: string;
@@ -123,6 +138,15 @@ const animateForm = reactive({
   direction: 'normal',
   fillMode: 'both',
 });
+
+const codeVisible = ref(false);
+const animateObj = ref();
+const animateInject = inject<{
+  keyframesRules: Record<
+    string,
+    { framesRule: { key: string; css: string; styles: CSSStyleDeclaration }[]; css: string }[]
+  >;
+}>('AnimateInject');
 
 const props = defineProps<AnimateDemoProps>();
 const animateStyle = computed(() => ({

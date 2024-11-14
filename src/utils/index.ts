@@ -13,10 +13,10 @@ export const copyTextToClipboard = (text: string, cb?: () => void) => {
         cb?.();
       })
       .catch(function () {
-        fallbackCopyTextToClipboard(text);
+        fallbackCopyTextToClipboard(text, cb);
       });
   } catch (err) {
-    fallbackCopyTextToClipboard(text);
+    fallbackCopyTextToClipboard(text, cb);
   }
 };
 

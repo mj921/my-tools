@@ -98,7 +98,6 @@ const createNums = (n = 1) => {
         r -= weights[i - 2];
         if (r <= 0) {
           cells.value[x][y] = Math.pow(2, i - 1);
-          console.log(Math.pow(2, i - 1));
         }
       }
       if (r > 0) {

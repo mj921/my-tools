@@ -1,90 +1,145 @@
 <template>
   <div class="mj-pre">
-    <template v-if="lang === 'css'">
-      <template v-for="(item, i) in eleList" :key="i">
-        <br v-if="item.type === 'br'" />
-        <span v-else :class="`mj-pre-css-${item.type}`">
-          <span
-            class="mj-pre-css-color-preview"
-            v-if="isColor(item.value)"
-            :style="{ backgroundColor: item.value }"
-          ></span>
-          {{ item.value }}
-        </span>
+    <CopyIcon v-if="copyable" @click="copyPre" />
+    <pre ref="preBox" class="mj-pre-container">
+      <mj-pre-css-ele v-if="lang === 'css'" :list="eleList" />
+      <template v-else>
+        <p v-for="(item, i) in eleList" :key="i">{{ item.value }}</p>
       </template>
-    </template>
-    <template v-else>
-      <p v-for="(item, i) in eleList" :key="i">{{ item.value }}</p>
-    </template>
+    </pre>
   </div>
 </template>
 <script lang="ts" setup>
-import type { MjPreProps } from './interface';
-import { computed } from 'vue';
+import { copyTextToClipboard, generateUuid } from '@/utils';
+import type { MjPreItem, MjPreMapItem, MjPreProps } from './interface';
+import { computed, ref } from 'vue';
+import MjPreCssEle from './MjPreCssEle.vue';
+import CopyIcon from '../MjIcon/CopyIcon.vue';
+import message from '../MjMessage';
 
-const props = defineProps<MjPreProps>();
+const props = withDefaults(defineProps<MjPreProps>(), {
+  copyable: true,
+});
 
-const isColor = (val: string) => /^(#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8}))$/.test(val);
+interface PreItem {
+  type: string;
+  value: string;
+  className?: string;
+  children: string[];
+}
+const preBox = ref<HTMLPreElement>();
 
 const parseCss = () => {
-  const val = props.value;
-  const list = [{ type: 'selector', value: '' }];
+  const map: Record<string, MjPreMapItem> = {};
+  const val = props.value.replace(/(^\s+|\s+$)/g, '');
+  const list: MjPreMapItem[] = [{ type: '', value: '', className: '', children: [] }];
   let i = 0;
   let index = 0;
+  let keyIndex = 1;
+  let keys = [generateUuid(), generateUuid()];
+  const root: PreItem = { type: 'root', value: '', className: '', children: [] };
+  map[keys[0]] = root;
   while (i < val.length) {
     const str = val[i];
-    if (list[index].type === 'selector') {
-      if (str === '{') {
-        list[index].value.trimEnd();
-        index++;
-        list[index] = { type: 'bracket', value: str };
-        index++;
-        list[index] = { type: 'br', value: '' };
-        index++;
-        list[index] = { type: 'propName', value: '' };
-      } else {
-        list[index].value += str;
-      }
-    } else if (list[index].type === 'propName') {
-      if (str === ':') {
-        list[index].value.trimEnd();
-        index++;
-        list[index] = { type: 'colon', value: ': ' };
-        index++;
-        list[index] = { type: 'propValue', value: '' };
-      } else if (str === '}') {
-        if (list[index].value.length > 0) {
-          index++;
+    if (!map[keys[keyIndex]]) {
+      if (str === '\n' || str === ' ') {
+        i++;
+        continue;
+      } else if (map[keys[keyIndex - 1]].type === 'root') {
+        if (str === '@') {
+          map[keys[keyIndex]] = {
+            type: 'keyframes',
+            value: '',
+            className: 'keyword',
+            children: [],
+          };
+        } else {
+          map[keys[keyIndex]] = { type: 'selector', value: '', className: '', children: [] };
         }
-        list[index] = { type: 'bracket', value: str };
-        index++;
-        list[index] = { type: 'br', value: '' };
-        index++;
-        list[index] = { type: 'selector', value: '' };
-      } else if (list[index].value.length > 0 || str.replace(/[\s\n]/g, '').length > 0) {
-        list[index].value += str;
+        root.children.push(keys[keyIndex]);
+      } else if (str === '}') {
+        map[keys[keyIndex - 1]].endBracket = '}';
+
+        keyIndex--;
+        keys[keyIndex] = generateUuid();
+        i++;
+        continue;
+      } else if (map[keys[keyIndex - 1]].type === 'keyframes') {
+        map[keys[keyIndex]] = { type: 'selector', value: '', className: '', children: [] };
+        map[keys[keyIndex - 1]].children.push(keys[keyIndex]);
+      } else if (map[keys[keyIndex - 1]].type === 'selector') {
+        if (map[keys[keyIndex - 1]].children.length) {
+          map[keys[keyIndex]] = { type: 'br', value: '', className: '', children: [] };
+          map[keys[keyIndex - 1]].children.push(keys[keyIndex]);
+          keys[keyIndex] = generateUuid();
+        }
+        map[keys[keyIndex]] = { type: 'propName', value: '', className: '', children: [] };
+        map[keys[keyIndex - 1]].children.push(keys[keyIndex]);
       }
-    } else if (list[index].type === 'propValue') {
+    }
+    if (map[keys[keyIndex]].type === 'keyframes') {
+      if (str === '{') {
+        map[keys[keyIndex]].value = map[keys[keyIndex]].value.replace(/(^\s+|\s+$)/g, '');
+        map[keys[keyIndex]].startBracket = '{';
+        keyIndex++;
+        keys[keyIndex] = generateUuid();
+      } else if (!map[keys[keyIndex]].startBracket) {
+        map[keys[keyIndex]].value += str;
+      }
+    } else if (map[keys[keyIndex]].type === 'selector') {
+      if (str === '{') {
+        map[keys[keyIndex]].value = map[keys[keyIndex]].value.replace(/(^\s+|\s+$)/g, '') + ' ';
+        map[keys[keyIndex]].startBracket = '{';
+        keyIndex++;
+        keys[keyIndex] = generateUuid();
+      } else if (!map[keys[keyIndex]].startBracket) {
+        map[keys[keyIndex]].value += str;
+      }
+    } else if (map[keys[keyIndex]].type === 'propName') {
+      if (str === ':') {
+        map[keys[keyIndex]].value = map[keys[keyIndex]].value.replace(/(^\s+|\s+$)/g, '');
+
+        keys[keyIndex] = generateUuid();
+        map[keys[keyIndex]] = { type: 'colon', value: ': ', children: [] };
+        map[keys[keyIndex - 1]].children.push(keys[keyIndex]);
+
+        keys[keyIndex] = generateUuid();
+        map[keys[keyIndex]] = { type: 'propValue', value: '', children: [] };
+        map[keys[keyIndex - 1]].children.push(keys[keyIndex]);
+      } else if (map[keys[keyIndex]].value.length > 0 || str.replace(/[\s\n]/g, '').length > 0) {
+        map[keys[keyIndex]].value += str;
+      }
+    } else if (map[keys[keyIndex]].type === 'propValue') {
       if (str === ';') {
-        list[index].value.trimEnd();
-        index++;
-        list[index] = { type: 'semicolon', value: str };
-        index++;
-        list[index] = { type: 'br', value: '' };
-        index++;
-        list[index] = { type: 'propName', value: '' };
-      } else if (list[index].value.length > 0 || str.replace(/[\s\n]/g, '').length > 0) {
-        list[index].value += str;
+        map[keys[keyIndex]].value = map[keys[keyIndex]].value.replace(/(^\s+|\s+$)/g, '');
+        keys[keyIndex] = generateUuid();
+        map[keys[keyIndex]] = { type: 'semicolon', value: str, children: [] };
+        map[keys[keyIndex - 1]].children.push(keys[keyIndex]);
+
+        keys[keyIndex] = generateUuid();
+      } else if (list[index].value.length > 0 || str.replace(/[\n]/g, '').length > 0) {
+        map[keys[keyIndex]].value += str;
       }
     }
     i++;
   }
-  return list;
+  const idToItem = (children: string[], level = 0): MjPreItem[] => {
+    return children.map((uuid: string) => {
+      return {
+        ...map[uuid],
+        level,
+        children: idToItem(map[uuid].children, level + 1),
+      };
+    });
+  };
+  return idToItem(root.children);
 };
 const parseText = () => {
-  return props.value.split(/[\n\r]/).map((el) => ({ type: 'text', value: el }));
+  return props.value
+    .split(/[\n\r]/)
+    .map((el) => ({ type: 'text', value: el, children: [] })) as MjPreItem[];
 };
-const eleList = computed<{ type: string; value: string }[]>(() => {
+const eleList = computed<MjPreItem[]>(() => {
   switch (props.lang) {
     case 'css':
       return parseCss();
@@ -92,21 +147,48 @@ const eleList = computed<{ type: string; value: string }[]>(() => {
       return parseText();
   }
 });
+const copyPre = () => {
+  if (preBox.value) {
+    copyTextToClipboard(preBox.value.innerText, () => {
+      message.success('复制成功');
+    });
+  } else {
+    copyTextToClipboard(props.value);
+  }
+};
 </script>
-<style scoped lang="scss">
+<style lang="scss">
 .mj-pre {
+  position: relative;
   background-color: #1f1f1f;
   padding: 16px;
-  word-break: break-all;
+  .mj-copy-icon {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    color: var(--mj-color-gray-4);
+    font-size: 20px;
+    cursor: pointer;
+  }
+  .mj-pre-container * {
+    overflow-wrap: break-word;
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
   .mj-pre-css-selector {
     color: #d7ba7d;
+  }
+  .mj-pre-css-keyword {
+    color: #c586c0;
   }
   .mj-pre-css-bracket {
     color: #ffd700;
   }
+  .mj-pre-css-funname {
+    color: #dcdcaa;
+  }
   .mj-pre-css-propName {
     color: #9cdcfe;
-    margin-left: 2em;
   }
   .mj-pre-css-colon,
   .mj-pre-css-semicolon {
@@ -114,12 +196,15 @@ const eleList = computed<{ type: string; value: string }[]>(() => {
   }
   .mj-pre-css-propValue {
     color: #ce9178;
-    .mj-pre-css-color-preview {
+    &.mj-pre-css-color-preview::before {
+      content: '';
       display: inline-block;
       border: 1px solid #fff;
       width: 10px;
       height: 10px;
       box-sizing: border-box;
+      background-color: var(--mj-pre-css-color-preview);
+      margin-right: 2px;
     }
   }
   &.mj-pre--light {
@@ -133,6 +218,9 @@ const eleList = computed<{ type: string; value: string }[]>(() => {
         border-color: #1f1f1f;
       }
     }
+  }
+  .mj-pre-css-block .mj-pre-css-block {
+    margin-left: 1em;
   }
 }
 </style>

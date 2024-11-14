@@ -47,7 +47,7 @@
 </template>
 <script lang="ts" setup>
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
-import { ref } from 'vue';
+import { onMounted, provide, reactive, ref } from 'vue';
 import AnimateDemo from '@/components/Animates/AnimateDemo.vue';
 import type { AnimateTypeItem } from './interface';
 import { animateConfig } from './config';
@@ -77,7 +77,7 @@ const navList = [
   },
   {
     label: '背景',
-    path: '/animates/background',
+    path: 'background',
   },
 ];
 
@@ -96,6 +96,64 @@ const init = (params: { group: string; type: string; subtype: string }) => {
   currentSubType.value = params.subtype || currTypeItem?.children?.[0] || '';
 };
 init(route.params as { group: string; type: string; subtype: string });
+const keyframesRules = ref<
+  Record<
+    string,
+    { framesRule: { key: string; css: string; styles: CSSStyleDeclaration }[]; css: string }[]
+  >
+>({});
+
+provide(
+  'AnimateInject',
+  reactive({
+    keyframesRules,
+  }),
+);
+
+const initKeyframesRules = () => {
+  // 获取所有的样式表
+  const styleSheets = document.styleSheets;
+  keyframesRules.value = {};
+
+  // 遍历每个样式表
+  for (let i = 0; i < styleSheets.length; i++) {
+    const sheet = styleSheets[i];
+
+    try {
+      // 尝试访问cssRules属性（可能会因为跨域样式表等问题抛出异常）
+      const rules = sheet.cssRules;
+
+      // 遍历每条规则
+      for (let j = 0; j < rules.length; j++) {
+        const rule = rules[j];
+
+        // 检查是否是@keyframes规则
+        if (rule instanceof CSSKeyframesRule) {
+          if (!keyframesRules.value[rule.name]) {
+            keyframesRules.value[rule.name] = [];
+          }
+          keyframesRules.value[rule.name].push({
+            css: rule.cssText,
+            framesRule: (Array.from(rule.cssRules) as CSSKeyframeRule[]).map((cssRule) => ({
+              key: cssRule.keyText, // 关键帧的百分比（如0%, 50%, 100%）
+              css: cssRule.cssText,
+              styles: cssRule.style, // 关键帧的样式
+            })),
+          });
+        }
+      }
+    } catch (error) {
+      // 处理访问cssRules时可能发生的异常（例如，跨域样式表）
+      console.warn('无法访问样式表的cssRules属性:', error);
+    }
+  }
+
+  return keyframesRules;
+};
+
+onMounted(() => {
+  initKeyframesRules();
+});
 
 onBeforeRouteUpdate((to) => {
   init(to.params as { group: string; type: string; subtype: string });

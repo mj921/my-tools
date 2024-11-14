@@ -134,7 +134,6 @@ const fileChange = () => {
           imgsRef.value.appendChild(img);
           num.value++;
           if (num.value === list.length) {
-            console.log(num.value, imgs.value.length);
             generateCssSprite();
           }
         };

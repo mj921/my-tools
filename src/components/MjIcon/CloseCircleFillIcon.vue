@@ -17,7 +17,6 @@
 </template>
 <script setup lang="ts">
 import type { MjIconProps } from './interface';
-const props = defineProps<MjIconProps>();
-console.log(props);
+defineProps<MjIconProps>();
 </script>
 <style src="./mjicon.scss" lang="scss"></style>

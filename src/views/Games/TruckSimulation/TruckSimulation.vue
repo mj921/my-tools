@@ -249,7 +249,6 @@ onMounted(() => {
       ctx.fillStyle = 'gray';
       ctx.fill();
     });
-    console.log(minX, maxX, minZ, maxZ);
   }
 });
 </script>

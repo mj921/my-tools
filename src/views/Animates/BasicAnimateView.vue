@@ -31,7 +31,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import AnimateDemo from '@/components/Animates/AnimateDemo.vue';
-import type { AnimateTypeItem, AnimateSubTypeItem } from './interface';
+import type { AnimateTypeItem } from './interface';
 import { animateConfig } from './config';
 import { useRoute } from 'vue-router';
 
