@@ -66,6 +66,11 @@ const router = createRouter({
       component: () => import('../views/ComponentExample/PreExample.vue'),
     },
     {
+      path: '/example/pie',
+      name: 'example-pie',
+      component: () => import('../views/ComponentExample/PieExample.vue'),
+    },
+    {
       path: '/game/zhongzu',
       name: 'game-zhongzu',
       component: () => import('../views/Games/ZhongZu/ZhongZuView.vue'),
@@ -161,6 +166,14 @@ const router = createRouter({
         title: 'ETS2-成就-积少成多',
       },
       component: () => import('../views/ETS2/JiShaoChengDuo/JiShaoChengDuo.vue'),
+    },
+    {
+      path: '/test/postmessage',
+      name: 'test-postmessage',
+      meta: {
+        title: 'postmessage',
+      },
+      component: () => import('../views/Test/PostMessage/PostMessage.vue'),
     },
   ],
 });
