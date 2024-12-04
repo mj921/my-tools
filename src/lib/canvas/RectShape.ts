@@ -9,6 +9,9 @@ class RectShape extends Shape {
   radius: number[];
   fillColor: string;
   strokeColor: string;
+  get type() {
+    return 'RectShape';
+  }
   constructor({
     x,
     y,

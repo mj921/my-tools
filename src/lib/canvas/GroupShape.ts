@@ -1,6 +1,6 @@
 import Shape from './Shape';
 
-class AreaShape extends Shape {
+class GroupShape extends Shape {
   x: number;
   y: number;
   width: number;
@@ -60,4 +60,4 @@ class AreaShape extends Shape {
   }
 }
 
-export default AreaShape;
+export default GroupShape;

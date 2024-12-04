@@ -1,9 +1,17 @@
 <template>
-  <div></div>
+  <div><button @click="windowOpen">打开</button></div>
 </template>
 <script lang="ts" setup>
 import { onMounted } from 'vue';
 
+const windowOpen = () => {
+  const opener = window.open('https://mj921.github.io/my-tools/test/postmessage');
+  window.addEventListener('message', (e) => {
+    if (e.data.msgType === 'loaded') {
+      opener?.postMessage({ msgType: 'test', value: { a: 1 } }, 'https://mj921.github.io');
+    }
+  });
+};
 onMounted(() => {
   setTimeout(() => {
     if (window.opener) {

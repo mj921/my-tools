@@ -1,21 +1,25 @@
-import type BaseShape from './BaseShape';
+import type { IShape } from './interface';
 
 class ShapeRender {
   canvasEle: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   offScreenCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
-  shapeList: BaseShape[] = [];
+  shapeList: IShape[] = [];
   width: number = 0;
   height: number = 0;
   dpr: number;
   offscreenCanvas: OffscreenCanvas;
-  hoverShape: BaseShape | null = null;
+  hoverShape: IShape | null = null;
   constructor({
     ele,
     dpr = 1,
+    width,
+    height,
   }: {
     ele?: HTMLCanvasElement | string;
     dpr?: number;
+    width?: number;
+    height?: number;
   } = {}) {
     this.dpr = dpr;
     let canvasEle: HTMLCanvasElement | null = null;
@@ -27,13 +31,14 @@ class ShapeRender {
       }
     } else {
       canvasEle = document.createElement('canvas');
+      document.body.appendChild(canvasEle);
     }
     if (!canvasEle) {
       throw new Error('canvas不存在');
     }
     this.canvasEle = canvasEle;
     this.offscreenCanvas = new OffscreenCanvas(this.width, this.height);
-    this.setCanvasSize();
+    this.setCanvasSize({ width, height });
     const offScreenCtx = this.offscreenCanvas.getContext('2d');
     if (!offScreenCtx) {
       throw new Error('获取离线canvas上下文失败');
@@ -88,7 +93,19 @@ class ShapeRender {
     this.offScreenCtx.clearRect(0, 0, this.width, this.height);
   }
 
-  setCanvasSize() {
+  setCanvasSize({
+    width,
+    height,
+  }: {
+    width?: number;
+    height?: number;
+  } = {}) {
+    if (width) {
+      this.canvasEle.style.width = `${width}px`;
+    }
+    if (height) {
+      this.canvasEle.style.height = `${height}px`;
+    }
     this.width = this.canvasEle.offsetWidth * this.dpr;
     this.height = this.canvasEle.offsetHeight * this.dpr;
     this.canvasEle.width = this.width;
@@ -97,10 +114,10 @@ class ShapeRender {
     this.offscreenCanvas.height = this.height;
   }
 
-  addShape(shape: BaseShape) {
+  addShape(shape: IShape) {
     this.shapeList.push(shape);
   }
-  removeShape(shape: BaseShape) {
+  removeShape(shape: IShape) {
     const index = this.shapeList.indexOf(shape);
     if (index > -1) {
       this.shapeList.splice(index, 1);

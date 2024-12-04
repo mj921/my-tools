@@ -6,7 +6,7 @@
 <script lang="ts" setup>
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { MjChartPieProps } from '../interface';
-import PieChart from '@/lib/canvas/PieChart';
+import PieChart from '@/lib/charts/PieChart';
 
 const chartRef = ref<HTMLCanvasElement>();
 const props = withDefaults(defineProps<MjChartPieProps>(), {

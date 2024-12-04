@@ -8,6 +8,7 @@ import MineClearanceIcon from '@/components/MjIcon/MineClearanceIcon.vue';
 import Merge2048Icon from '@/components/MjIcon/Merge2048Icon.vue';
 import DrawCircleIcon from '@/components/MjIcon/DrawCircleIcon.vue';
 import ETS2Icon from '@/components/MjIcon/ETS2Icon.vue';
+import { onMounted } from 'vue';
 
 const router = useRouter();
 const navs = [

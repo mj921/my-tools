@@ -1,9 +1,6 @@
 import { clamp } from '@/utils';
 import BaseChart from './BaseChart';
-import ShapeRender from './ShapeRender';
-import RectShape from './RectShape';
-import TextShape from './TextShape';
-import RingShape from './RingShape';
+import { RectShape, RingShape, ShapeRender, TextShape } from '../canvas';
 
 export interface PieOptions {
   radius?: string | number | Array<string | number>;
@@ -76,7 +73,6 @@ class PieChart extends BaseChart {
     return 0;
   }
   render() {
-    console.time();
     const { radius, data, startAngle, endAngle } = this.options!;
     this.shapeRender.clear();
     this.shapeRender.setCanvasSize();
@@ -117,7 +113,6 @@ class PieChart extends BaseChart {
           startAngle: start * rangeLen + startAngle,
           endAngle: end * rangeLen + startAngle,
           fillColor: this.colors[i % this.colors.length],
-          hoverRadius: 5 * this.dpr,
         });
       } else {
         this.shapeList.push({
@@ -144,39 +139,50 @@ class PieChart extends BaseChart {
             startAngle: start * rangeLen + startAngle,
             endAngle: end * rangeLen + startAngle,
             fillColor: this.colors[i % this.colors.length],
-            hoverRadius: 5 * this.dpr,
           }),
         });
 
         this.shapeList[i].legendShape.addEventListener('mouseenter', () => {
-          this.shapeList[i].ringShape.isHover = true;
+          this.shapeList[i].ringShape.update({
+            outerRadius: outerRadius + 5 * this.dpr,
+          });
           this.shapeList[i].ringShape.zIndex = 1;
           this.shapeRender?.render();
         });
         this.shapeList[i].legendShape.addEventListener('mouseout', () => {
-          this.shapeList[i].ringShape.isHover = false;
+          this.shapeList[i].ringShape.update({
+            outerRadius,
+          });
           this.shapeList[i].ringShape.zIndex = 0;
           this.shapeRender?.render();
         });
 
         this.shapeList[i].legendTextShape.addEventListener('mouseenter', () => {
-          this.shapeList[i].ringShape.isHover = true;
+          this.shapeList[i].ringShape.update({
+            outerRadius: outerRadius + 5 * this.dpr,
+          });
           this.shapeList[i].ringShape.zIndex = 1;
           this.shapeRender?.render();
         });
         this.shapeList[i].legendTextShape.addEventListener('mouseout', () => {
-          this.shapeList[i].ringShape.isHover = false;
+          this.shapeList[i].ringShape.update({
+            outerRadius,
+          });
           this.shapeList[i].ringShape.zIndex = 0;
           this.shapeRender?.render();
         });
 
         this.shapeList[i].ringShape.addEventListener('mouseenter', () => {
-          this.shapeList[i].ringShape.isHover = true;
+          this.shapeList[i].ringShape.update({
+            outerRadius: outerRadius + 5 * this.dpr,
+          });
           this.shapeList[i].ringShape.zIndex = 1;
           this.shapeRender?.render();
         });
         this.shapeList[i].ringShape.addEventListener('mouseout', () => {
-          this.shapeList[i].ringShape.isHover = false;
+          this.shapeList[i].ringShape.update({
+            outerRadius,
+          });
           this.shapeList[i].ringShape.zIndex = 0;
           this.shapeRender?.render();
         });
@@ -198,7 +204,6 @@ class PieChart extends BaseChart {
       }
     }
     this.shapeRender.render();
-    console.timeEnd();
   }
 }
 

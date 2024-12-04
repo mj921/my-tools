@@ -10,7 +10,6 @@ export interface RingShapeOptions {
   endAngle?: number;
   fillColor?: string;
   strokeColor?: string;
-  hoverRadius?: number;
 }
 
 class RingShape extends Shape {
@@ -22,18 +21,18 @@ class RingShape extends Shape {
   endAngle: number;
   fillColor: string;
   strokeColor: string;
-  isHover = false;
-  hoverRadius = 5;
+  get type() {
+    return 'RingShape';
+  }
   constructor({
     rx,
     ry,
     outerRadius,
     innerRadius = 0,
     startAngle = 0,
-    endAngle = Math.PI * 2,
+    endAngle = 360,
     fillColor = '#000',
     strokeColor = '#000',
-    hoverRadius = 5,
   }: RingShapeOptions) {
     super();
     this.rx = rx;
@@ -44,7 +43,6 @@ class RingShape extends Shape {
     this.endAngle = endAngle;
     this.fillColor = fillColor;
     this.strokeColor = strokeColor;
-    this.hoverRadius = hoverRadius;
   }
 
   update({
@@ -103,7 +101,6 @@ class RingShape extends Shape {
   render(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): void {
     super.render(ctx);
     ctx.fillStyle = this.fillColor;
-    const outerRadius = this.isHover ? this.outerRadius + this.hoverRadius : this.outerRadius;
     ctx.beginPath();
     ctx.moveTo(
       this.rx + this.innerRadius * Math.cos((this.endAngle / 180) * Math.PI),
@@ -118,13 +115,13 @@ class RingShape extends Shape {
       true,
     );
     ctx.lineTo(
-      this.rx + outerRadius * Math.cos((this.startAngle / 180) * Math.PI),
-      this.ry + outerRadius * Math.sin((this.startAngle / 180) * Math.PI),
+      this.rx + this.outerRadius * Math.cos((this.startAngle / 180) * Math.PI),
+      this.ry + this.outerRadius * Math.sin((this.startAngle / 180) * Math.PI),
     );
     ctx.arc(
       this.rx,
       this.ry,
-      outerRadius,
+      this.outerRadius,
       (this.startAngle / 180) * Math.PI,
       (this.endAngle / 180) * Math.PI,
     );

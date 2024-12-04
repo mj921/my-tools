@@ -71,6 +71,11 @@ const router = createRouter({
       component: () => import('../views/ComponentExample/PieExample.vue'),
     },
     {
+      path: '/example/shape',
+      name: 'example-shape',
+      component: () => import('../views/ComponentExample/ShapeExample.vue'),
+    },
+    {
       path: '/game/zhongzu',
       name: 'game-zhongzu',
       component: () => import('../views/Games/ZhongZu/ZhongZuView.vue'),
