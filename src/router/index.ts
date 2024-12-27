@@ -180,6 +180,14 @@ const router = createRouter({
       },
       component: () => import('../views/Test/PostMessage/PostMessage.vue'),
     },
+    {
+      path: '/game/flight-chess',
+      name: 'game-flight-chess',
+      meta: {
+        title: '飞行棋',
+      },
+      component: () => import('../views/Games/FlightChess/FlightChessView.vue'),
+    },
   ],
 });
 
