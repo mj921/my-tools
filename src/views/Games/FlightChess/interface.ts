@@ -2,7 +2,7 @@ export interface Cell {
   x: number;
   y: number;
   type: string;
-  rectType?: string;
+  rectType?: 'horizontal' | 'vertical' | 'square';
   triangleType?: string;
   color: string;
 }

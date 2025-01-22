@@ -1,5 +1,5 @@
 import ChessGroup, { ChessGroupStatus } from './ChessGroup';
-import type { Point } from './interface';
+import type { Cell, Point } from './interface';
 
 class Player {
   color: string;
@@ -7,10 +7,12 @@ class Player {
   birthPoint: Point;
   plantPoint: Point;
   size: number;
-  constructor(color: string, birthPoint: Point, plantPoint: Point, size: number) {
+  pathCell: Cell[];
+  constructor(color: string, birthPoint: Point, plantPoint: Point, size: number, pathCell: Cell[]) {
     this.size = size;
     this.color = color;
     this.plantPoint = plantPoint;
+    this.pathCell = pathCell;
     this.chessGroups = [
       new ChessGroup(color, 0, size),
       new ChessGroup(color, 1, size),
@@ -32,6 +34,47 @@ class Player {
           );
           break;
         case ChessGroupStatus.Move:
+          if (group.position === -1) {
+            ctx.drawImage(
+              group.canvas,
+              this.birthPoint.x * this.size,
+              this.birthPoint.y * this.size,
+            );
+          } else {
+            const groupCell = this.pathCell[group.position];
+            let _x = groupCell.x;
+            let _y = groupCell.y;
+            switch (groupCell.type) {
+              case 'rect':
+                if (groupCell.rectType === 'horizontal') {
+                  _x += 0.5;
+                } else if (groupCell.rectType === 'vertical') {
+                  _y += 0.5;
+                }
+                break;
+              case 'triangle':
+                switch (groupCell.triangleType) {
+                  case 'topLeft':
+                    _x += 0.05;
+                    _y += 0.05;
+                    break;
+                  case 'topRight':
+                    _x += 0.95;
+                    _y += 0.05;
+                    break;
+                  case 'bottomLeft':
+                    _x += 0.05;
+                    _y += 0.95;
+                    break;
+                  case 'bottomRight':
+                    _x += 0.95;
+                    _y += 0.95;
+                    break;
+                }
+                break;
+            }
+            ctx.drawImage(group.canvas, _x * this.size, _y * this.size);
+          }
           break;
         case ChessGroupStatus.Merge:
           break;

@@ -25,7 +25,7 @@ import { GameStatus, type Cell } from './interface';
 import Board from './Board';
 import Player from './Player';
 import MjButton from '@/components/MjButton/MjButton.vue';
-import { ChessGroupStatus } from './ChessGroup';
+import ChessGroup, { ChessGroupStatus } from './ChessGroup';
 
 const gameStatus = ref(GameStatus.Dice);
 const playerIndex = ref(0);
@@ -38,16 +38,60 @@ const boardCtx = ref<OffscreenCanvasRenderingContext2D>();
 const chessCanvas = ref<OffscreenCanvas>();
 const chessCtx = ref<OffscreenCanvasRenderingContext2D>();
 const cellSize = ref(Math.floor(Math.min(window.innerWidth, window.innerHeight) / 17) * Board.dpr);
+const pathCells = ref<number[][]>([]);
 const players = ref<Player[]>([]);
 const diceLoading = ref(false);
-const diceNum = ref<number>();
+const diceNum = ref<number>(6);
 const diceAnimateNum = ref<number>();
+const translateSelect = () => {
+  gameStatus.value = GameStatus.SelectChess;
+};
+const translateNextPlayer = (again = false) => {
+  gameStatus.value = GameStatus.Dice;
+  if (!again) {
+    playerIndex.value = (playerIndex.value + 1) % players.value.length;
+  }
+};
+const translateMove = (group: ChessGroup) => {
+  if (diceNum.value !== 6 && group.status !== ChessGroupStatus.Move) return;
+  if (group.status === ChessGroupStatus.Ready) {
+    group.status = ChessGroupStatus.Move;
+    group.position = -1;
+    drawChesses();
+    translateNextPlayer(true);
+  } else {
+    gameStatus.value = GameStatus.Move;
+    let step = 1;
+    const moveAnimate = (timer: number) => {
+      group.position += step;
+      if (group.position === 58) {
+        step = -1;
+      }
+      drawChesses();
+      if (timer > 1) {
+        setTimeout(() => moveAnimate(timer - 1), 500);
+      } else {
+        translateNextPlayer(diceNum.value === 6);
+      }
+    };
+    moveAnimate(diceNum.value);
+    drawChesses();
+  }
+};
 const diceAnimat = (timer = 180) => {
   diceAnimateNum.value = Math.floor(Math.random() * 6) + 1;
   if (!diceLoading.value || timer === 0) {
     diceLoading.value = false;
-    diceNum.value = Math.floor(Math.random() * 6) + 1;
-    gameStatus.value = GameStatus.SelectChess;
+    // diceNum.value = Math.floor(Math.random() * 6) + 1;
+    diceNum.value = Math.floor(Math.random() * 2) + 5;
+    if (
+      diceNum.value === 6 ||
+      players.value[playerIndex.value].chessGroups.find((el) => el.status === ChessGroupStatus.Move)
+    ) {
+      translateSelect();
+    } else {
+      translateNextPlayer();
+    }
   } else {
     requestAnimationFrame(() => diceAnimat(timer - 1));
   }
@@ -72,6 +116,7 @@ const fillRect = (
   if (fillColor) {
     ctx.fillStyle = fillColor;
   }
+  drawChesses();
   ctx.fillRect(x * cellSize.value, y * cellSize.value, w * cellSize.value, h * cellSize.value);
 };
 const drawLine = (
@@ -330,10 +375,10 @@ const createCells = () => {
 
   const movePaths: number[][] = [[], [], [], []];
   for (let i = 0; i < 13; i++) {
-    movePaths[0].push((i + 2) % 52);
-    movePaths[1].push((i + 15) % 52);
-    movePaths[2].push((i + 28) % 52);
-    movePaths[3].push((i + 41) % 52);
+    movePaths[3].push((i + 2) % 52);
+    movePaths[0].push((i + 15) % 52);
+    movePaths[1].push((i + 28) % 52);
+    movePaths[2].push((i + 41) % 52);
   }
   const finalCells: Cell[][] = [[], [], [], []];
   for (let i = 0; i < 5; i++) {
@@ -372,6 +417,7 @@ const createCells = () => {
   }
   cells.push(...finalCells[0], ...finalCells[1], ...finalCells[2], ...finalCells[3]);
   boradCells.value = cells;
+  pathCells.value = movePaths;
 };
 const drawRectCell = ({ x, y, rectType, color }: Cell) => {
   fillRect(x, y, rectType === 'horizontal' ? 2 : 1, rectType === 'vertical' ? 2 : 1, {
@@ -410,6 +456,16 @@ const drawPlant = (x: number, y: number, fillColor: string) => {
   drawCircle(x + 3, y + 1, 0.45, { fillColor: 'white' });
   drawCircle(x + 1, y + 3, 0.45, { fillColor: 'white' });
   drawCircle(x + 3, y + 3, 0.45, { fillColor: 'white' });
+};
+const drawChesses = () => {
+  if (!mainCtx.value || !chessCtx.value) return;
+  chessCtx.value.clearRect(0, 0, cellSize.value * 17, cellSize.value * 17);
+  players.value.forEach((player) => {
+    player.drawChess(chessCtx.value!);
+  });
+  mainCtx.value.clearRect(0, 0, cellSize.value * 17, cellSize.value * 17);
+  mainCtx.value.drawImage(boardCanvas.value!, 0, 0);
+  mainCtx.value.drawImage(chessCanvas.value!, 0, 0);
 };
 onMounted(() => {
   const canvas = document.createElement('canvas');
@@ -476,10 +532,34 @@ onMounted(() => {
     marginBlock: 0.1,
   });
   players.value = [
-    new Player(colors[0], { x: 12, y: 0 }, { x: 15, y: 2 }, cellSize.value),
-    new Player(colors[1], { x: 16, y: 12 }, { x: 15, y: 15 }, cellSize.value),
-    new Player(colors[2], { x: 4, y: 16 }, { x: 2, y: 15 }, cellSize.value),
-    new Player(colors[3], { x: 0, y: 4 }, { x: 2, y: 2 }, cellSize.value),
+    new Player(
+      colors[0],
+      { x: 12, y: 0 },
+      { x: 15, y: 2 },
+      cellSize.value,
+      pathCells.value[0].map((index) => boradCells.value[index]),
+    ),
+    new Player(
+      colors[1],
+      { x: 16, y: 12 },
+      { x: 15, y: 15 },
+      cellSize.value,
+      pathCells.value[1].map((index) => boradCells.value[index]),
+    ),
+    new Player(
+      colors[2],
+      { x: 4, y: 16 },
+      { x: 2, y: 15 },
+      cellSize.value,
+      pathCells.value[2].map((index) => boradCells.value[index]),
+    ),
+    new Player(
+      colors[3],
+      { x: 0, y: 4 },
+      { x: 2, y: 2 },
+      cellSize.value,
+      pathCells.value[3].map((index) => boradCells.value[index]),
+    ),
   ];
   players.value.forEach((player) => {
     const { plantPoint, color } = player;
@@ -494,6 +574,7 @@ onMounted(() => {
     const x = Math.floor((e.offsetX * Board.dpr) / cellSize.value);
     const y = Math.floor((e.offsetY * Board.dpr) / cellSize.value);
     const currPlayer = players.value[playerIndex.value];
+    let groupChess;
     if (
       x >= currPlayer.plantPoint.x - 2 &&
       x < currPlayer.plantPoint.x + 2 &&
@@ -506,8 +587,8 @@ onMounted(() => {
           const groupX = currPlayer.plantPoint.x - 2 + (i % 2 === 1 ? 2 : 0);
           const groupY = currPlayer.plantPoint.y - 2 + (Math.floor(i / 2) === 1 ? 2 : 0);
           if (x >= groupX && x < groupX + 2 && y >= groupY && y < groupY + 2) {
-            console.log(group);
-            return;
+            groupChess = group;
+            break;
           }
         }
       }
@@ -515,9 +596,57 @@ onMounted(() => {
       for (let i = 0; i < currPlayer.chessGroups.length; i++) {
         const group = currPlayer.chessGroups[i];
         if (group.status === ChessGroupStatus.Move) {
-          console.log(group);
+          if (group.position === -1) {
+            if (x === currPlayer.birthPoint.x && y === currPlayer.birthPoint.y) {
+              groupChess = group;
+              break;
+            }
+          } else {
+            const groupCell = currPlayer.pathCell[group.position];
+            let _w = 1;
+            let _h = 1;
+            let _x = groupCell.x;
+            let _y = groupCell.y;
+            switch (groupCell.type) {
+              case 'rect':
+                if (groupCell.rectType === 'horizontal') {
+                  _x += 1;
+                } else if (groupCell.rectType === 'vertical') {
+                  _y += 1;
+                }
+                break;
+              case 'triangle':
+                switch (groupCell.triangleType) {
+                  case 'topLeft':
+                    _x += 0.05;
+                    _y += 0.05;
+                    break;
+                  case 'topRight':
+                    _x += 0.95;
+                    _y += 0.05;
+                    break;
+                  case 'bottomLeft':
+                    _x += 0.05;
+                    _y += 0.95;
+                    break;
+                  case 'bottomRight':
+                    _x += 0.95;
+                    _y += 0.95;
+                    break;
+                }
+                break;
+            }
+
+            if (x >= _x && x < _x + _w && y >= _y && y < _y + _h) {
+              groupChess = group;
+              break;
+            }
+          }
         }
       }
+    }
+    if (groupChess) {
+      translateMove(groupChess);
     }
   });
 });
