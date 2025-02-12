@@ -1,5 +1,7 @@
 import { strFromU8, strToU8, unzlibSync, zlibSync } from 'fflate';
 
+const Uint32Max = 4294967295;
+
 class BinaryWriter {
   mode: 'Read' | 'Write';
   dataExtensionLength: number;
@@ -10,7 +12,6 @@ class BinaryWriter {
   stringDecoder = new TextDecoder();
   byteOffset: number;
   numericToStringIDMap: Map<any, any>;
-  static Uint32Max = 4294967295;
   constructor(
     mode: 'Read' | 'Write',
     dataExtensionLength: number,
@@ -73,9 +74,9 @@ class BinaryWriter {
     this.byteOffset += BigUint64Array.BYTES_PER_ELEMENT;
     return int;
   }
-  readFloat32() {
+  readFloat32(littleEndian?: boolean) {
     this.checkReadAccess();
-    const value = this.dataView.getFloat32(this.byteOffset);
+    const value = this.dataView.getFloat32(this.byteOffset, littleEndian);
     this.byteOffset += Float32Array.BYTES_PER_ELEMENT;
     return value;
   }
@@ -91,15 +92,15 @@ class BinaryWriter {
     this.byteOffset += Int8Array.BYTES_PER_ELEMENT;
     return value;
   }
-  readInt16() {
+  readInt16(littleEndian?: boolean) {
     this.checkReadAccess();
-    const value = this.dataView.getInt16(this.byteOffset);
+    const value = this.dataView.getInt16(this.byteOffset, littleEndian);
     this.byteOffset += Int16Array.BYTES_PER_ELEMENT;
     return value;
   }
-  readInt32() {
+  readInt32(littleEndian?: boolean) {
     this.checkReadAccess();
-    const value = this.dataView.getInt32(this.byteOffset);
+    const value = this.dataView.getInt32(this.byteOffset, littleEndian);
     this.byteOffset += Int32Array.BYTES_PER_ELEMENT;
     return value;
   }
@@ -133,7 +134,7 @@ class BinaryWriter {
     this.checkReadAccess();
     return this.readUint8() === 1;
   }
-  readArray(decodeArray: (val: BinaryWriter) => any) {
+  readArray<T>(decodeArray: (val: BinaryWriter) => T) {
     this.checkReadAccess();
     const arrayLength = this.readUint32();
     const array = [];
@@ -184,6 +185,18 @@ class BinaryWriter {
     const buffer = this._data.slice(this.byteOffset, this.byteOffset + bufferByteLength);
     this.byteOffset += bufferByteLength;
     return buffer;
+  }
+
+  readView(length?: number) {
+    this.checkReadAccess();
+    let bufferByteLength = length;
+    if (typeof bufferByteLength === 'undefined') {
+      bufferByteLength = this.readUint32();
+    }
+
+    const dataView = new DataView(this._data, this.byteOffset, bufferByteLength);
+    this.byteOffset += bufferByteLength;
+    return dataView;
   }
 
   readSet(decodeValue: (r: BinaryWriter) => any) {
@@ -261,8 +274,8 @@ class BinaryWriter {
   writeString(value: string) {
     this.checkWriteAccess();
     const encodedString = this.stringEncoder.encode(value);
-    if (encodedString.byteLength > BinaryWriter.Uint32Max) {
-      throw new Error(`Tried to write string but length exceeds: ${BinaryWriter.Uint32Max}`);
+    if (encodedString.byteLength > Uint32Max) {
+      throw new Error(`Tried to write string but length exceeds: ${Uint32Max}`);
     }
     this.writeUint32(encodedString.byteLength);
     this.checkDataSize(encodedString.byteLength);
@@ -275,8 +288,8 @@ class BinaryWriter {
   }
   writeArray(array: any, encodeArray: (val: any, self: BinaryWriter) => void) {
     this.checkWriteAccess();
-    if (array.length > BinaryWriter.Uint32Max) {
-      throw new Error(`Tried to write array but length exceeds: ${BinaryWriter.Uint32Max}`);
+    if (array.length > Uint32Max) {
+      throw new Error(`Tried to write array but length exceeds: ${Uint32Max}`);
     }
     this.writeUint32(array.length);
     array.forEach((value: any) => encodeArray(value, this));
@@ -287,8 +300,8 @@ class BinaryWriter {
     encodeValue: (key: any, self: BinaryWriter, value: any) => void,
   ) {
     this.checkWriteAccess();
-    if (map.size > BinaryWriter.Uint32Max) {
-      throw new Error(`Tried to write map, but size exceeds: ${BinaryWriter.Uint32Max}`);
+    if (map.size > Uint32Max) {
+      throw new Error(`Tried to write map, but size exceeds: ${Uint32Max}`);
     }
     this.writeUint32(map.size);
     map.forEach((value, key) => {
@@ -299,8 +312,8 @@ class BinaryWriter {
 
   writeComplexMap(map: Map<any, any>, encode: (key: any, value: any, self: BinaryWriter) => void) {
     this.checkWriteAccess();
-    if (map.size > BinaryWriter.Uint32Max) {
-      throw new Error(`Tried to write map, but size exceeds: ${BinaryWriter.Uint32Max}`);
+    if (map.size > Uint32Max) {
+      throw new Error(`Tried to write map, but size exceeds: ${Uint32Max}`);
     }
     this.writeUint32(map.size);
     map.forEach((value, key) => {
@@ -315,8 +328,8 @@ class BinaryWriter {
   ) {
     this.checkWriteAccess();
     const arr = Object.entries(map);
-    if (arr.length > BinaryWriter.Uint32Max) {
-      throw new Error(`Tried to write JSON, but size exceeds: ${BinaryWriter.Uint32Max}`);
+    if (arr.length > Uint32Max) {
+      throw new Error(`Tried to write JSON, but size exceeds: ${Uint32Max}`);
     }
     this.writeUint32(arr.length);
     arr.forEach(([key, value]) => {
@@ -328,8 +341,8 @@ class BinaryWriter {
   writeComplexJSON(map: Object, encode: (key: any, value: any, self: BinaryWriter) => void) {
     this.checkWriteAccess();
     const arr = Object.entries(map);
-    if (arr.length > BinaryWriter.Uint32Max) {
-      throw new Error(`Tried to write JSON, but size exceeds: ${BinaryWriter.Uint32Max}`);
+    if (arr.length > Uint32Max) {
+      throw new Error(`Tried to write JSON, but size exceeds: ${Uint32Max}`);
     }
     this.writeUint32(arr.length);
     arr.forEach((key, value) => {

@@ -137,6 +137,7 @@ const jumpLink = (item: { link: string; name: string }) => {
         flex-wrap: wrap;
         gap: 16px;
         .nav-item {
+          margin-bottom: 4px;
           width: calc(25% - 12px);
           box-sizing: border-box;
           padding: 16px;
@@ -179,6 +180,12 @@ const jumpLink = (item: { link: string; name: string }) => {
             &::before {
               transform: scale(1);
             }
+          }
+        }
+
+        @supports not (gap: 16px) {
+          .nav-item {
+            margin-bottom: 16px;
           }
         }
       }

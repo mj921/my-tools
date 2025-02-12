@@ -188,6 +188,58 @@ const router = createRouter({
       },
       component: () => import('../views/Games/FlightChess/FlightChessView.vue'),
     },
+
+    {
+      path: '/dsp/blueprint',
+      name: 'dsp-blueprint',
+      meta: {
+        title: '戴森球计划-蓝图',
+      },
+      component: () => import('../views/DSP/Blueprint/BlueprintView.vue'),
+    },
+    {
+      path: '/booking',
+      name: 'booking',
+      component: () => import('../views/Booking/BookingView.vue'),
+      meta: {
+        title: '年夜饭预定',
+      },
+      redirect: '/booking/home',
+      children: [
+        {
+          path: '/booking/home',
+          name: 'booking-home',
+          component: () => import('../views/Booking/BookingHomeView.vue'),
+          meta: {
+            title: '年夜饭预定-日历',
+          },
+        },
+        {
+          path: '/booking/detail/:date',
+          name: 'booking-detail',
+          component: () => import('../views/Booking/BookingDetailView.vue'),
+          meta: {
+            title: '年夜饭预定-详情',
+          },
+        },
+        {
+          path: '/booking/add/:date/:id',
+          name: 'booking-edit',
+          component: () => import('../views/Booking/BookingAddView.vue'),
+          meta: {
+            title: '年夜饭预定-修改',
+          },
+        },
+        {
+          path: '/booking/add/:date',
+          name: 'booking-add',
+          component: () => import('../views/Booking/BookingAddView.vue'),
+          meta: {
+            title: '年夜饭预定-新增',
+          },
+        },
+      ],
+    },
   ],
 });
 

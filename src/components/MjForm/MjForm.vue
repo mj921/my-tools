@@ -1,5 +1,5 @@
 <template>
-  <form class="mj-form" @submit="onSubmit"><slot /></form>
+  <form class="mj-form" @submit="onSubmit"><slot></slot></form>
 </template>
 <script lang="ts" setup>
 import { provide, reactive, ref } from 'vue';
