@@ -16,6 +16,7 @@
     "fflate": "^0.8.2",
     "lunar-typescript": "^1.7.6",
     "pinia": "^2.1.7",
+    "pinyin": "^4.0.0-alpha.2",
     "three": "^0.172.0",
     "vue": "^3.4.29",
     "vue-router": "^4.3.3"
@@ -24,6 +25,7 @@
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^20.14.5",
+    "@types/pinyin": "^2.10.2",
     "@types/three": "^0.172.0",
     "@vitejs/plugin-vue": "^5.0.5",
     "@vitejs/plugin-vue-jsx": "^4.0.0",

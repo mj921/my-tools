@@ -181,6 +181,14 @@ const router = createRouter({
       component: () => import('../views/Test/PostMessage/PostMessage.vue'),
     },
     {
+      path: '/test/sun',
+      name: 'test-sun',
+      meta: {
+        title: 'sun',
+      },
+      component: () => import('../views/Test/SunView.vue'),
+    },
+    {
       path: '/game/flight-chess',
       name: 'game-flight-chess',
       meta: {

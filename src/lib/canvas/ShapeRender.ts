@@ -12,7 +12,7 @@ class ShapeRender {
   hoverShape: IShape | null = null;
   constructor({
     ele,
-    dpr = 1,
+    dpr = window.devicePixelRatio,
     width,
     height,
   }: {

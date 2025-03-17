@@ -10,14 +10,19 @@ import {
   Scene,
   SphereGeometry,
   WebGLRenderer,
+  LineSegments,
+  BufferGeometry,
+  BufferAttribute,
+  LineBasicMaterial,
 } from 'three';
 import { onMounted, ref } from 'vue';
 import { setRenderer } from './utils';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import SphereLineGeometry from './lib/SphereLineSegments';
 
 const R = 200.2;
 const SEGMENT = 200;
-const BASE_SIZE = (Math.PI * R * 2) / SEGMENT;
+const BASE_SIZE = (Math.PI * R * 2) / SEGMENT / 5;
 
 const editorRef = ref<HTMLDivElement>();
 
@@ -29,12 +34,10 @@ camera.far = 3000;
 camera.position.z = 3 * R;
 setRenderer(editorRef, renderer, camera);
 
-const planetLineMesh = new Mesh(
-  new SphereGeometry(R, SEGMENT, SEGMENT / 2),
-  new MeshBasicMaterial({
-    color: 0x10d62b,
-    wireframe: true,
-  }),
+const planetLineMesh = new LineSegments(
+  new SphereLineGeometry(R),
+  // new LineBasicMaterial({ color: 0x10d62b }),
+  new LineBasicMaterial({ color: 0xff0000 }),
 );
 scene.add(planetLineMesh);
 const planetMesh = new Mesh(
@@ -46,7 +49,7 @@ const planetMesh = new Mesh(
 scene.add(planetMesh);
 
 const box = new Mesh(
-  new BoxGeometry(3 * BASE_SIZE, 3 * BASE_SIZE, 3 * BASE_SIZE),
+  new BoxGeometry(BASE_SIZE, BASE_SIZE, BASE_SIZE),
   new MeshBasicMaterial({ color: 0xff0000 }),
 );
 box.position.z = R;

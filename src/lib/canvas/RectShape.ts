@@ -20,6 +20,7 @@ class RectShape extends Shape {
     radius,
     fillColor = '#000',
     strokeColor = '#000',
+    dpr,
   }: {
     x: number;
     y: number;
@@ -28,8 +29,9 @@ class RectShape extends Shape {
     radius?: number | number[];
     fillColor?: string;
     strokeColor?: string;
+    dpr?: number;
   }) {
-    super();
+    super({ dpr, width, height });
     this.x = x;
     this.y = y;
     this.width = width;
@@ -60,50 +62,34 @@ class RectShape extends Shape {
   }
   render(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): void {
     super.render(ctx);
-    ctx.fillStyle = this.fillColor;
-    ctx.beginPath();
-    ctx.moveTo(this.x + this.radius[0], this.y);
-    ctx.lineTo(this.x + this.width - this.radius[1], this.y);
-    if (this.radius[1] > 0) {
-      ctx.arc(
-        this.x + this.width - this.radius[1],
-        this.y + this.radius[1],
-        this.radius[1],
-        -Math.PI / 2,
-        0,
-      );
+    const { __ctx, __canvas, x, y, radius, dpr, width, height } = this;
+    const _x = x * dpr;
+    const _y = y * dpr;
+    const _width = width * dpr;
+    const _height = height * dpr;
+    const _radius = radius.map((el) => el * dpr);
+    __ctx.fillStyle = this.fillColor;
+    __ctx.beginPath();
+    __ctx.moveTo(_radius[0], 0);
+    __ctx.lineTo(_width - _radius[1], 0);
+    if (_radius[1] > 0) {
+      __ctx.arc(_width - _radius[1], _radius[1], _radius[1], -Math.PI / 2, 0);
     }
-    ctx.lineTo(this.x + this.width, this.y + this.height - this.radius[2]);
-    if (this.radius[2] > 0) {
-      ctx.arc(
-        this.x + this.width - this.radius[2],
-        this.y + this.height - this.radius[2],
-        this.radius[2],
-        0,
-        Math.PI / 2,
-      );
+    __ctx.lineTo(_width, _height - _radius[2]);
+    if (_radius[2] > 0) {
+      __ctx.arc(_width - _radius[2], _height - _radius[2], _radius[2], 0, Math.PI / 2);
     }
-    ctx.lineTo(this.x + this.radius[3], this.y + this.height);
-    if (this.radius[3] > 0) {
-      ctx.arc(
-        this.x + this.radius[3],
-        this.y + this.height - this.radius[3],
-        this.radius[3],
-        Math.PI / 2,
-        Math.PI,
-      );
+    __ctx.lineTo(_radius[3], _height);
+    if (_radius[3] > 0) {
+      __ctx.arc(_radius[3], _height - _radius[3], _radius[3], Math.PI / 2, Math.PI);
     }
-    ctx.lineTo(this.x, this.y + this.radius[3]);
-    if (this.radius[0] > 0) {
-      ctx.arc(
-        this.x + this.radius[0],
-        this.y + this.radius[0],
-        this.radius[0],
-        Math.PI,
-        (Math.PI / 2) * 3,
-      );
+    __ctx.lineTo(0, _radius[3]);
+    if (_radius[0] > 0) {
+      __ctx.arc(_radius[0], _radius[0], _radius[0], Math.PI, (Math.PI / 2) * 3);
     }
-    ctx.fill();
+    __ctx.fill();
+
+    ctx.drawImage(__canvas, _x, _y, _width, _height);
   }
   update({
     x,
@@ -145,32 +131,34 @@ class RectShape extends Shape {
     }
   }
   isInShape(x: number, y: number): boolean {
-    if (x < this.x || x > this.x + this.width || y < this.y || y > this.y + this.height)
+    const _x = x / this.dpr;
+    const _y = y / this.dpr;
+    if (_x < this.x || _x > this.x + this.width || _y < this.y || _y > this.y + this.height)
       return false;
     if (
       this.radius[0] > 0 &&
-      x < this.x + this.radius[0] &&
-      y < this.y + this.radius[0] &&
-      getDistance(x, y, this.x + this.radius[0], this.y + this.radius[0]) > this.radius[0]
+      _x < this.x + this.radius[0] &&
+      _y < this.y + this.radius[0] &&
+      getDistance(_x, _y, this.x + this.radius[0], this.y + this.radius[0]) > this.radius[0]
     )
       return false;
 
     if (
       this.radius[1] > 0 &&
-      x > this.x + this.width - this.radius[1] &&
-      y < this.y + this.radius[1] &&
-      getDistance(x, y, this.x + this.width - this.radius[1], this.y + this.radius[1]) >
+      _x > this.x + this.width - this.radius[1] &&
+      _y < this.y + this.radius[1] &&
+      getDistance(_x, _y, this.x + this.width - this.radius[1], this.y + this.radius[1]) >
         this.radius[1]
     )
       return false;
 
     if (
       this.radius[2] > 0 &&
-      x > this.x + this.width - this.radius[2] &&
-      y > this.y + this.height - this.radius[2] &&
+      _x > this.x + this.width - this.radius[2] &&
+      _y > this.y + this.height - this.radius[2] &&
       getDistance(
-        x,
-        y,
+        _x,
+        _y,
         this.x + this.width - this.radius[2],
         this.y + this.height - this.radius[2],
       ) > this.radius[2]
@@ -179,9 +167,9 @@ class RectShape extends Shape {
 
     if (
       this.radius[3] > 0 &&
-      x < this.x + this.radius[3] &&
-      y > this.y + this.height - this.radius[3] &&
-      getDistance(x, y, this.x + this.radius[3], this.y + this.height - this.radius[3]) >
+      _x < this.x + this.radius[3] &&
+      _y > this.y + this.height - this.radius[3] &&
+      getDistance(_x, _y, this.x + this.radius[3], this.y + this.height - this.radius[3]) >
         this.radius[3]
     )
       return false;

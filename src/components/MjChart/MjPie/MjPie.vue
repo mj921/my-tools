@@ -29,6 +29,7 @@ const render = () => {
     } else {
       pieChart.value.render();
     }
+    console.log(pieChart.value);
   }
 };
 

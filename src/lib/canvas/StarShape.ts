@@ -11,6 +11,7 @@ export interface StarShapeOptions {
   strokeColor?: string;
   corners?: number;
   startAngle?: number;
+  dpr?: number;
 }
 
 class StarShape extends PolygonShape {
@@ -28,8 +29,9 @@ class StarShape extends PolygonShape {
     strokeColor = '#000',
     corners = 3,
     startAngle = 270,
+    dpr,
   }: StarShapeOptions) {
-    super({ x, y, width, height, fillColor, strokeColor, corners, startAngle }, false);
+    super({ x, y, width, height, fillColor, strokeColor, corners, startAngle, dpr }, false);
     this.innerRadius = clamp(innerRadius, 0, 1);
     this.points = this.getPoints();
   }

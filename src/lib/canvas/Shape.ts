@@ -5,14 +5,20 @@ import type { IShape } from './interface';
 class Shape extends ShapeEventTrigger implements IShape {
   visible = true;
   zIndex = 0;
+  dpr: number;
   __canvas: OffscreenCanvas;
   __ctx: OffscreenCanvasRenderingContext2D;
   get type() {
     return 'Shape';
   }
-  constructor({ width = 0, height = 0 }: { width?: number; height?: number } = {}) {
+  constructor({
+    width = 0,
+    height = 0,
+    dpr = window.devicePixelRatio,
+  }: { width?: number; height?: number; dpr?: number } = {}) {
     super();
-    this.__canvas = new OffscreenCanvas(width, height);
+    this.dpr = dpr;
+    this.__canvas = new OffscreenCanvas(width * dpr, height * dpr);
     const ctx = this.__canvas.getContext('2d');
     if (ctx) {
       this.__ctx = ctx;
@@ -20,12 +26,15 @@ class Shape extends ShapeEventTrigger implements IShape {
       throw new Error('获取离线canvas上下文失败');
     }
   }
-  __updateSize({ width, height }: { width?: number; height?: number } = {}) {
+  __updateSize({ width, height, dpr }: { width?: number; height?: number; dpr?: number } = {}) {
+    if (dpr) {
+      this.dpr = dpr;
+    }
     if (width) {
-      this.__canvas.width = width;
+      this.__canvas.width = width * this.dpr;
     }
     if (height) {
-      this.__canvas.height = height;
+      this.__canvas.height = height * this.dpr;
     }
   }
   render(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D) {

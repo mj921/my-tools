@@ -76,7 +76,9 @@ class PieChart extends BaseChart {
     const { radius, data, startAngle, endAngle } = this.options!;
     this.shapeRender.clear();
     this.shapeRender.setCanvasSize();
-    const size = Math.min(this.shapeRender.width, this.shapeRender.height);
+    const shapeRenderWidth = this.shapeRender.width / this.dpr;
+    const shapeRenderHeight = this.shapeRender.height / this.dpr;
+    const size = Math.min(shapeRenderWidth, shapeRenderHeight);
 
     let innerRadius = this.calcRadius(radius[0], size / 2);
     let outerRadius = this.calcRadius(radius[1], size / 2);
@@ -91,23 +93,23 @@ class PieChart extends BaseChart {
       const end = start + el.value / total;
       if (this.shapeList[i]) {
         this.shapeList[i].legendShape.update({
-          x: 20 * this.dpr,
-          y: (20 + i * 24) * this.dpr,
-          width: 24 * this.dpr,
-          height: 12 * this.dpr,
-          radius: 4 * this.dpr,
+          x: 20,
+          y: 20 + i * 24,
+          width: 24,
+          height: 12,
+          radius: 4,
           fillColor: this.colors[i % this.colors.length],
         });
         this.shapeList[i].legendTextShape.update({
-          x: 50 * this.dpr,
-          y: (20 + i * 24) * this.dpr,
-          fontSize: 14 * this.dpr,
+          x: 50,
+          y: 20 + i * 24,
+          fontSize: 14,
           text: el.name,
           fillColor: this.colors[i % this.colors.length],
         });
         this.shapeList[i].ringShape.update({
-          rx: this.shapeRender!.width / 2,
-          ry: this.shapeRender!.height / 2,
+          rx: shapeRenderWidth / 2,
+          ry: shapeRenderHeight / 2,
           innerRadius,
           outerRadius,
           startAngle: start * rangeLen + startAngle,
@@ -117,34 +119,37 @@ class PieChart extends BaseChart {
       } else {
         this.shapeList.push({
           legendShape: new RectShape({
-            x: 20 * this.dpr,
-            y: (20 + i * 24) * this.dpr,
-            width: 24 * this.dpr,
-            height: 12 * this.dpr,
-            radius: 4 * this.dpr,
+            x: 20,
+            y: 20 + i * 24,
+            width: 24,
+            height: 12,
+            radius: 4,
             fillColor: this.colors[i % this.colors.length],
+            dpr: this.dpr,
           }),
           legendTextShape: new TextShape({
-            x: 50 * this.dpr,
-            y: (20 + i * 24) * this.dpr,
-            fontSize: 14 * this.dpr,
+            x: 50,
+            y: 20 + i * 24,
+            fontSize: 14,
             text: el.name,
             fillColor: this.colors[i % this.colors.length],
+            dpr: this.dpr,
           }),
           ringShape: new RingShape({
-            rx: this.shapeRender!.width / 2,
-            ry: this.shapeRender!.height / 2,
+            rx: shapeRenderWidth / 2,
+            ry: shapeRenderHeight / 2,
             innerRadius,
             outerRadius,
             startAngle: start * rangeLen + startAngle,
             endAngle: end * rangeLen + startAngle,
             fillColor: this.colors[i % this.colors.length],
+            dpr: this.dpr,
           }),
         });
 
         this.shapeList[i].legendShape.addEventListener('mouseenter', () => {
           this.shapeList[i].ringShape.update({
-            outerRadius: outerRadius + 5 * this.dpr,
+            outerRadius: outerRadius + 5,
           });
           this.shapeList[i].ringShape.zIndex = 1;
           this.shapeRender?.render();
@@ -159,7 +164,7 @@ class PieChart extends BaseChart {
 
         this.shapeList[i].legendTextShape.addEventListener('mouseenter', () => {
           this.shapeList[i].ringShape.update({
-            outerRadius: outerRadius + 5 * this.dpr,
+            outerRadius: outerRadius + 5,
           });
           this.shapeList[i].ringShape.zIndex = 1;
           this.shapeRender?.render();
@@ -174,7 +179,7 @@ class PieChart extends BaseChart {
 
         this.shapeList[i].ringShape.addEventListener('mouseenter', () => {
           this.shapeList[i].ringShape.update({
-            outerRadius: outerRadius + 5 * this.dpr,
+            outerRadius: outerRadius + 5,
           });
           this.shapeList[i].ringShape.zIndex = 1;
           this.shapeRender?.render();

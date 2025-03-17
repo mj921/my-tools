@@ -10,6 +10,7 @@ export interface RingShapeOptions {
   endAngle?: number;
   fillColor?: string;
   strokeColor?: string;
+  dpr?: number;
 }
 
 class RingShape extends Shape {
@@ -33,8 +34,9 @@ class RingShape extends Shape {
     endAngle = 360,
     fillColor = '#000',
     strokeColor = '#000',
+    dpr,
   }: RingShapeOptions) {
-    super();
+    super({ dpr, width: outerRadius * 2, height: outerRadius * 2 });
     this.rx = rx;
     this.ry = ry;
     this.outerRadius = outerRadius;
@@ -54,6 +56,7 @@ class RingShape extends Shape {
     endAngle,
     fillColor,
     strokeColor,
+    dpr,
   }: {
     [key in keyof RingShapeOptions]?: RingShapeOptions[key];
   }) {
@@ -65,6 +68,11 @@ class RingShape extends Shape {
     }
     if (typeof outerRadius !== 'undefined') {
       this.outerRadius = outerRadius;
+      this.__updateSize({ width: outerRadius * 2, height: outerRadius * 2 });
+    }
+    if (typeof dpr !== 'undefined') {
+      this.dpr = dpr;
+      this.__updateSize({ dpr });
     }
     if (typeof innerRadius !== 'undefined') {
       this.innerRadius = innerRadius;
@@ -83,10 +91,13 @@ class RingShape extends Shape {
     }
   }
   isInShape(x: number, y: number) {
-    const d = getDistance(x, y, this.rx, this.ry);
+    const _x = x / this.dpr;
+    const _y = y / this.dpr;
+    const d = getDistance(_x, _y, this.rx, this.ry);
     if (d < this.innerRadius || d > this.outerRadius) return false;
-    let angle = (Math.acos((x - this.rx) / d) / Math.PI) * 180;
-    if (y < this.ry) {
+    if (this.startAngle % 360 === this.endAngle % 360) return true;
+    let angle = (Math.acos((_x - this.rx) / d) / Math.PI) * 180;
+    if (_y < this.ry) {
       angle = 360 - angle;
     }
     if (
@@ -100,32 +111,44 @@ class RingShape extends Shape {
   }
   render(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): void {
     super.render(ctx);
-    ctx.fillStyle = this.fillColor;
-    ctx.beginPath();
-    ctx.moveTo(
-      this.rx + this.innerRadius * Math.cos((this.endAngle / 180) * Math.PI),
-      this.ry + this.innerRadius * Math.sin((this.endAngle / 180) * Math.PI),
+    const { __ctx, __canvas, dpr, rx, ry, innerRadius, outerRadius } = this;
+    const _rx = rx * dpr;
+    const _ry = ry * dpr;
+    const _innerRadius = innerRadius * dpr;
+    const _outerRadius = outerRadius * dpr;
+    __ctx.fillStyle = this.fillColor;
+    __ctx.beginPath();
+    __ctx.moveTo(
+      _outerRadius + _innerRadius * Math.cos((this.endAngle / 180) * Math.PI),
+      _outerRadius + _innerRadius * Math.sin((this.endAngle / 180) * Math.PI),
     );
-    ctx.arc(
-      this.rx,
-      this.ry,
-      this.innerRadius,
+    __ctx.arc(
+      _outerRadius,
+      _outerRadius,
+      _innerRadius,
       (this.endAngle / 180) * Math.PI,
       (this.startAngle / 180) * Math.PI,
       true,
     );
-    ctx.lineTo(
-      this.rx + this.outerRadius * Math.cos((this.startAngle / 180) * Math.PI),
-      this.ry + this.outerRadius * Math.sin((this.startAngle / 180) * Math.PI),
+    __ctx.lineTo(
+      _outerRadius + _outerRadius * Math.cos((this.startAngle / 180) * Math.PI),
+      _outerRadius + _outerRadius * Math.sin((this.startAngle / 180) * Math.PI),
     );
-    ctx.arc(
-      this.rx,
-      this.ry,
-      this.outerRadius,
+    __ctx.arc(
+      _outerRadius,
+      _outerRadius,
+      _outerRadius,
       (this.startAngle / 180) * Math.PI,
       (this.endAngle / 180) * Math.PI,
     );
-    ctx.fill();
+    __ctx.fill();
+    ctx.drawImage(
+      __canvas,
+      _rx - _outerRadius,
+      _ry - _outerRadius,
+      _outerRadius * 2,
+      _outerRadius * 2,
+    );
   }
 }
 

@@ -6,8 +6,20 @@ class GroupShape extends Shape {
   width: number;
   height: number;
   shapeList: Shape[] = [];
-  constructor({ x, y, width, height }: { x: number; y: number; width: number; height: number }) {
-    super();
+  constructor({
+    x,
+    y,
+    width,
+    height,
+    dpr,
+  }: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    dpr?: number;
+  }) {
+    super({ dpr });
     this.x = x;
     this.y = y;
     this.width = width;
@@ -44,7 +56,9 @@ class GroupShape extends Shape {
     }
   }
   isInShape(x: number, y: number): boolean {
-    if (x < this.x || x > this.x + this.width || y < this.y || y > this.y + this.height)
+    const _x = x / this.dpr;
+    const _y = y / this.dpr;
+    if (_x < this.x || _x > this.x + this.width || _y < this.y || _y > this.y + this.height)
       return false;
     return true;
   }

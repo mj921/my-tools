@@ -11,6 +11,7 @@ export interface PolygonShapeOptions {
   corners?: number;
   startAngle?: number;
   points?: number[] | number[][] | IPoint[];
+  dpr?: number;
 }
 
 class PolygonShape extends Shape {
@@ -38,10 +39,11 @@ class PolygonShape extends Shape {
       corners = 3,
       startAngle = 270,
       points = [],
+      dpr,
     }: PolygonShapeOptions,
     autoCalcPoint = true,
   ) {
-    super({ width, height });
+    super({ width, height, dpr });
     this.x = x;
     this.y = y;
     this.width = width;
@@ -146,23 +148,34 @@ class PolygonShape extends Shape {
     this.points = this.getPoints();
   }
   isInShape(x: number, y: number) {
-    const dx = x - this.x;
-    const dy = y - this.y;
-    if (dx < 0 || dy < 0 || dx > this.width || dy > this.height) return false;
-    const imageData = this.__ctx.getImageData(0, 0, this.width, this.height).data;
-    return imageData[(dy * this.width + dx) * 4 + 3] > 0;
+    const dx = x - this.x * this.dpr;
+    const dy = y - this.y * this.dpr;
+    if (dx < 0 || dy < 0 || dx > this.width * this.dpr || dy > this.height * this.dpr) return false;
+    const imageData = this.__ctx.getImageData(
+      0,
+      0,
+      this.width * this.dpr,
+      this.height * this.dpr,
+    ).data;
+    return imageData[(dy * this.width * this.dpr + dx) * 4 + 3] > 0;
   }
   render(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): void {
     super.render(ctx);
     const { __ctx } = this;
     __ctx.fillStyle = this.fillColor;
     __ctx.beginPath();
-    __ctx.moveTo(this.points[0], this.points[1]);
+    __ctx.moveTo(this.points[0] * this.dpr, this.points[1] * this.dpr);
     for (let i = 2; i < this.points.length; i += 2) {
-      __ctx.lineTo(this.points[i], this.points[i + 1]);
+      __ctx.lineTo(this.points[i] * this.dpr, this.points[i + 1] * this.dpr);
     }
     __ctx.fill();
-    ctx.drawImage(this.__canvas, this.x, this.y, this.width, this.height);
+    ctx.drawImage(
+      this.__canvas,
+      this.x * this.dpr,
+      this.y * this.dpr,
+      this.width * this.dpr,
+      this.height * this.dpr,
+    );
   }
 }
 

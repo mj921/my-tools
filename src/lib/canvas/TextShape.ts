@@ -20,6 +20,7 @@ class TextShape extends Shape {
     y,
     fillColor = '#000',
     strokeColor = '#000',
+    dpr,
   }: {
     x: number;
     y: number;
@@ -29,8 +30,9 @@ class TextShape extends Shape {
     fontSize?: number;
     fontFamily?: string;
     fontWeight?: string;
+    dpr?: number;
   }) {
-    super();
+    super({ dpr });
     this.x = x;
     this.y = y;
     this.text = text;
@@ -68,10 +70,15 @@ class TextShape extends Shape {
   render(ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): void {
     super.render(ctx);
     ctx.fillStyle = this.fillColor;
-    ctx.font = `${this.fontWeight || ''} ${this.fontSize}px ${this.fontFamily || ''}`;
+    ctx.font = `${this.fontWeight || ''} ${this.fontSize * this.dpr}px ${this.fontFamily || ''}`;
     ctx.textBaseline = 'middle';
 
-    ctx.fillText(this.text, this.x, this.y + this.height / 2, this.width);
+    ctx.fillText(
+      this.text,
+      this.x * this.dpr,
+      (this.y + this.height / 2) * this.dpr,
+      this.width * this.dpr,
+    );
   }
   update({
     x,
@@ -82,6 +89,7 @@ class TextShape extends Shape {
     fontSize,
     fontFamily,
     fontWeight,
+    dpr,
   }: {
     x?: number;
     y?: number;
@@ -91,7 +99,11 @@ class TextShape extends Shape {
     fontSize?: number;
     fontFamily?: string;
     fontWeight?: string;
+    dpr?: number;
   }): void {
+    if (dpr) {
+      this.dpr = dpr;
+    }
     if (typeof x !== 'undefined') {
       this.x = x;
     }
@@ -126,7 +138,9 @@ class TextShape extends Shape {
     this.width = ctx.measureText(text).width;
   }
   isInShape(x: number, y: number): boolean {
-    if (x < this.x || x > this.x + this.width || y < this.y || y > this.y + this.height)
+    const _x = x / this.dpr;
+    const _y = y / this.dpr;
+    if (_x < this.x || _x > this.x + this.width || _y < this.y || _y > this.y + this.height)
       return false;
     return true;
   }
