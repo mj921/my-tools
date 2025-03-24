@@ -1,4 +1,10 @@
-export type ShapeEventTriggerHandle = (e: { type: string; target: ShapeEventTrigger }) => void;
+import type Shape from './Shape';
+
+export type ShapeEventTriggerHandle<T = any> = (e: {
+  type: string;
+  target: ShapeEventTrigger;
+  data?: T;
+}) => void;
 
 class ShapeEventTrigger {
   private eventHandleList: Record<string, ShapeEventTriggerHandle[]> = {};
@@ -8,11 +14,12 @@ class ShapeEventTrigger {
     }
     this.eventHandleList[eventName].push(eventHandle);
   }
-  emitEvent(eventName: string) {
+  emitEvent(eventName: string, data?: any) {
     (this.eventHandleList[eventName] || []).forEach((handle) =>
       handle({
         type: eventName,
         target: this,
+        data,
       }),
     );
   }
@@ -29,6 +36,13 @@ class ShapeEventTrigger {
   removeAllEventListener() {
     this.eventHandleList = {};
   }
+  hasEventListener(eventName: string) {
+    return !!this.eventHandleList[eventName];
+  }
 }
 
 export default ShapeEventTrigger;
+
+export interface ShapeMouseEvent extends MouseEvent {
+  shape: Shape;
+}

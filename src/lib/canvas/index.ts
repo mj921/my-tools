@@ -5,4 +5,3 @@ export { default as TextShape } from './TextShape';
 export { default as RingShape } from './RingShape';
 export { default as StarShape } from './StarShape';
 export { default as PolygonShape } from './PolygonShape';
-export { default as StarShapeOld } from './StarShapeOld';

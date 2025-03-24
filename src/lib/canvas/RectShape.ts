@@ -1,44 +1,33 @@
-import Shape from './Shape';
+import Shape, { type BaseShapeOptions } from './Shape';
 import { getDistance } from './utils';
 
+export interface RectShapeOptions extends BaseShapeOptions {
+  radius?: number | number[];
+  fillColor?: string;
+  strokeColor?: string;
+  lineWidth?: number;
+}
+
 class RectShape extends Shape {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
   radius: number[];
   fillColor: string;
   strokeColor: string;
+  lineWidth: number;
   get type() {
     return 'RectShape';
   }
   constructor({
-    x,
-    y,
-    width,
-    height,
     radius,
     fillColor = '#000',
     strokeColor = '#000',
-    dpr,
-  }: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    radius?: number | number[];
-    fillColor?: string;
-    strokeColor?: string;
-    dpr?: number;
-  }) {
-    super({ dpr, width, height });
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+    lineWidth = 0,
+    ...restParams
+  }: RectShapeOptions) {
+    super({ ...restParams });
     this.radius = this.parseRaduisList(radius);
     this.fillColor = fillColor;
     this.strokeColor = strokeColor;
+    this.lineWidth = lineWidth;
   }
   parseRaduisList(radius?: number | number[]) {
     if (typeof radius === 'number') {
@@ -69,6 +58,8 @@ class RectShape extends Shape {
     const _height = height * dpr;
     const _radius = radius.map((el) => el * dpr);
     __ctx.fillStyle = this.fillColor;
+    __ctx.strokeStyle = this.strokeColor;
+    __ctx.lineWidth = this.lineWidth;
     __ctx.beginPath();
     __ctx.moveTo(_radius[0], 0);
     __ctx.lineTo(_width - _radius[1], 0);
@@ -88,7 +79,7 @@ class RectShape extends Shape {
       __ctx.arc(_radius[0], _radius[0], _radius[0], Math.PI, (Math.PI / 2) * 3);
     }
     __ctx.fill();
-
+    __ctx.stroke();
     ctx.drawImage(__canvas, _x, _y, _width, _height);
   }
   update({

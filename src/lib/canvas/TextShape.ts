@@ -1,40 +1,37 @@
-import Shape from './Shape';
+import Shape, { type BaseShapeOptions } from './Shape';
+
+export interface TextShapeOptions extends BaseShapeOptions {
+  fillColor?: string;
+  strokeColor?: string;
+  text: string;
+  fontSize?: number;
+  fontFamily?: string;
+  fontWeight?: string;
+
+  textAlign?: 'left' | 'center' | 'right';
+}
 
 class TextShape extends Shape {
   text: string;
   fontSize: number;
   fontFamily?: string;
   fontWeight?: string;
-  x: number;
-  y: number;
   width: number;
   height: number;
   fillColor: string;
   strokeColor: string;
+  textAlign: 'left' | 'center' | 'right';
   constructor({
     text,
     fontSize = 14,
     fontFamily = 'sans-serif',
     fontWeight,
-    x,
-    y,
     fillColor = '#000',
     strokeColor = '#000',
-    dpr,
-  }: {
-    x: number;
-    y: number;
-    fillColor?: string;
-    strokeColor?: string;
-    text: string;
-    fontSize?: number;
-    fontFamily?: string;
-    fontWeight?: string;
-    dpr?: number;
-  }) {
-    super({ dpr });
-    this.x = x;
-    this.y = y;
+    textAlign = 'left',
+    ...restParams
+  }: TextShapeOptions) {
+    super({ ...restParams });
     this.text = text;
     this.fontSize = fontSize;
     this.fontFamily = fontFamily;
@@ -46,6 +43,7 @@ class TextShape extends Shape {
     this.height = fontSize;
     this.fillColor = fillColor;
     this.strokeColor = strokeColor;
+    this.textAlign = textAlign;
   }
   parseRaduisList(radius?: number | number[]) {
     if (typeof radius === 'number') {
@@ -72,7 +70,7 @@ class TextShape extends Shape {
     ctx.fillStyle = this.fillColor;
     ctx.font = `${this.fontWeight || ''} ${this.fontSize * this.dpr}px ${this.fontFamily || ''}`;
     ctx.textBaseline = 'middle';
-
+    ctx.textAlign = this.textAlign;
     ctx.fillText(
       this.text,
       this.x * this.dpr,

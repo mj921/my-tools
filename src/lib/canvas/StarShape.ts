@@ -1,37 +1,29 @@
 import { clamp } from '@/utils';
 import PolygonShape from './PolygonShape';
+import type { BaseShapeOptions } from './Shape';
 
-export interface StarShapeOptions {
-  x: number;
-  y: number;
-  width: number;
-  height?: number;
+export interface StarShapeOptions extends BaseShapeOptions {
   innerRadius?: number;
   fillColor?: string;
   strokeColor?: string;
   corners?: number;
   startAngle?: number;
-  dpr?: number;
 }
 
 class StarShape extends PolygonShape {
   innerRadius: number;
   get type() {
-    return 'StarShape1';
+    return 'StarShape';
   }
   constructor({
-    x,
-    y,
-    width,
-    height = 0,
     innerRadius = 0.382,
     fillColor = '#000',
     strokeColor = '#000',
     corners = 3,
     startAngle = 270,
-    dpr,
+    ...restParams
   }: StarShapeOptions) {
-    super({ x, y, width, height, fillColor, strokeColor, corners, startAngle, dpr }, false);
+    super({ fillColor, strokeColor, corners, startAngle, ...restParams }, false);
     this.innerRadius = clamp(innerRadius, 0, 1);
     this.points = this.getPoints();
   }

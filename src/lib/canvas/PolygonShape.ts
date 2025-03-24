@@ -1,24 +1,15 @@
-import Shape from './Shape';
+import Shape, { type BaseShapeOptions } from './Shape';
 import type { IPoint } from './interface';
 
-export interface PolygonShapeOptions {
-  x: number;
-  y: number;
-  width: number;
-  height?: number;
+export interface PolygonShapeOptions extends BaseShapeOptions {
   fillColor?: string;
   strokeColor?: string;
   corners?: number;
   startAngle?: number;
   points?: number[] | number[][] | IPoint[];
-  dpr?: number;
 }
 
 class PolygonShape extends Shape {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
   fillColor: string;
   strokeColor: string;
   corners: number;
@@ -30,24 +21,16 @@ class PolygonShape extends Shape {
   }
   constructor(
     {
-      x,
-      y,
-      width,
-      height = 0,
       fillColor = '#000',
       strokeColor = '#000',
       corners = 3,
       startAngle = 270,
       points = [],
-      dpr,
+      ...restParams
     }: PolygonShapeOptions,
     autoCalcPoint = true,
   ) {
-    super({ width, height, dpr });
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+    super({ ...restParams });
     this.fillColor = fillColor;
     this.strokeColor = strokeColor;
     this.corners = corners;

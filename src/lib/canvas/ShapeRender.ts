@@ -1,27 +1,39 @@
-import type { IShape } from './interface';
+import type Shape from './Shape';
 
 class ShapeRender {
   canvasEle: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
   offScreenCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
-  shapeList: IShape[] = [];
+  shapeList: Shape[] = [];
   width: number = 0;
   height: number = 0;
   dpr: number;
   offscreenCanvas: OffscreenCanvas;
-  hoverShape: IShape | null = null;
+  hoverShape: Shape | null = null;
+  allowDrop: boolean;
+  zIndex = 1;
+  dropInfo: {
+    shape: Shape;
+    x: number;
+    y: number;
+    startX: number;
+    startY: number;
+  } | null = null;
   constructor({
     ele,
     dpr = window.devicePixelRatio,
     width,
     height,
+    allowDrop = false,
   }: {
     ele?: HTMLCanvasElement | string;
     dpr?: number;
     width?: number;
     height?: number;
+    allowDrop?: boolean;
   } = {}) {
     this.dpr = dpr;
+    this.allowDrop = allowDrop;
     let canvasEle: HTMLCanvasElement | null = null;
     if (ele) {
       if (typeof ele === 'string') {
@@ -49,8 +61,66 @@ class ShapeRender {
       throw new Error('获取canvas上下文失败');
     }
     this.ctx = ctx;
+    this.canvasEle.addEventListener('contextmenu', (e) => this.onContextMenu(e));
+    this.canvasEle.addEventListener('mousedown', (e) => this.onMouseDown(e));
     this.canvasEle.addEventListener('mousemove', (e) => this.onMouseMove(e));
     this.canvasEle.addEventListener('click', (e) => this.onClick(e));
+    let throttleFlag = true;
+    window.addEventListener('mousemove', (e) => {
+      if (throttleFlag) {
+        throttleFlag = false;
+        setTimeout(() => {
+          throttleFlag = true;
+        }, 30);
+        this.onShapeDropMove(e);
+      }
+    });
+    window.addEventListener('mouseup', (e) => {
+      this.onShapeDropEnd(e);
+    });
+  }
+
+  private onShapeDropMove(e: MouseEvent) {
+    if (this.dropInfo) {
+      const { shape, x, y, startX, startY } = this.dropInfo;
+      shape.update({ x: startX + e.clientX - x, y: startY + e.clientY - y });
+      this.render();
+    }
+  }
+  private onShapeDropEnd(e: MouseEvent) {
+    if (this.dropInfo) {
+      const { shape, x, y, startX, startY } = this.dropInfo;
+      shape.update({ x: startX + e.clientX - x, y: startY + e.clientY - y });
+      this.render();
+      shape.emitEvent('dropend', this.dropInfo);
+      this.dropInfo = null;
+    }
+  }
+
+  private onMouseDown(e: MouseEvent) {
+    const x = e.offsetX * this.dpr;
+    const y = e.offsetY * this.dpr;
+    for (let index = this.shapeList.length - 1; index >= 0; index--) {
+      const element = this.shapeList[index];
+      if (element.isInShape(x, y)) {
+        if (e.button === 0 && this.allowDrop && element.allowDrop) {
+          this.dropInfo = {
+            shape: element,
+            x: e.clientX,
+            y: e.clientY,
+            startX: element.x,
+            startY: element.y,
+          };
+          element.emitEvent('dropstart', this.dropInfo);
+          this.render();
+        }
+        element.emitEvent('mousedown', {
+          shape: element,
+          ...e,
+        });
+        break;
+      }
+    }
   }
 
   private onMouseMove(e: MouseEvent) {
@@ -58,9 +128,9 @@ class ShapeRender {
     const y = e.offsetY * this.dpr;
     const oldHoverShape = this.hoverShape;
     let hoverShape = null;
-    for (let index = 0; index < this.shapeList.length; index++) {
+    for (let index = this.shapeList.length - 1; index >= 0; index--) {
       const element = this.shapeList[index];
-      if (element.isInShape(x, y)) {
+      if (element.hasEventListener('mousemove') && element.isInShape(x, y)) {
         hoverShape = element;
         break;
       }
@@ -68,10 +138,10 @@ class ShapeRender {
     this.hoverShape = hoverShape;
     if (oldHoverShape !== this.hoverShape) {
       if (oldHoverShape) {
-        oldHoverShape.onMouseOut();
+        oldHoverShape.emitEvent('mouseout');
       }
       if (this.hoverShape) {
-        this.hoverShape.onMouseEnter();
+        this.hoverShape.emitEvent('mouseenter');
       }
     }
   }
@@ -79,10 +149,24 @@ class ShapeRender {
   private onClick(e: MouseEvent) {
     const x = e.offsetX * this.dpr;
     const y = e.offsetY * this.dpr;
-    for (let index = 0; index < this.shapeList.length; index++) {
+    for (let index = this.shapeList.length - 1; index >= 0; index--) {
       const element = this.shapeList[index];
-      if (element.isInShape(x, y)) {
-        element.onClick();
+      if (element.hasEventListener('click') && element.isInShape(x, y)) {
+        element.emitEvent('click');
+        break;
+      }
+    }
+  }
+
+  private onContextMenu(e: MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const x = e.offsetX * this.dpr;
+    const y = e.offsetY * this.dpr;
+    for (let index = this.shapeList.length - 1; index >= 0; index--) {
+      const element = this.shapeList[index];
+      if (element.hasEventListener('contextmenu') && element.isInShape(x, y)) {
+        element.emitEvent('contextmenu');
         break;
       }
     }
@@ -114,10 +198,13 @@ class ShapeRender {
     this.offscreenCanvas.height = this.height;
   }
 
-  addShape(shape: IShape) {
+  addShape(shape: Shape) {
     this.shapeList.push(shape);
+    shape.zIndex = this.zIndex++;
+    shape.rootRender = this;
+    shape.parentShape = null;
   }
-  removeShape(shape: IShape) {
+  removeShape(shape: Shape) {
     const index = this.shapeList.indexOf(shape);
     if (index > -1) {
       this.shapeList.splice(index, 1);

@@ -196,6 +196,14 @@ const router = createRouter({
       },
       component: () => import('../views/Games/FlightChess/FlightChessView.vue'),
     },
+    {
+      path: '/game/chinese-combination',
+      name: 'game-chinese-combination',
+      meta: {
+        title: '汉字合成',
+      },
+      component: () => import('../views/Games/ChineseCombination/ChineseCombination.vue'),
+    },
 
     {
       path: '/dsp/blueprint',

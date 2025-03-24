@@ -2,14 +2,7 @@
   <div></div>
 </template>
 <script lang="ts" setup>
-import {
-  PolygonShape,
-  RectShape,
-  RingShape,
-  ShapeRender,
-  StarShape,
-  StarShapeOld,
-} from '@/lib/canvas';
+import { PolygonShape, RectShape, RingShape, ShapeRender, StarShape } from '@/lib/canvas';
 import { onMounted } from 'vue';
 
 onMounted(() => {
@@ -61,16 +54,6 @@ onMounted(() => {
     dpr,
   });
   render.addShape(polygon);
-
-  const star4 = new StarShapeOld({
-    x: 100,
-    y: 600,
-    width: 100,
-    height: 100,
-    fillColor: '#ff0000',
-    innerRadius: 0.1,
-  });
-  render.addShape(star4);
 
   const rect = new RectShape({
     x: 300,

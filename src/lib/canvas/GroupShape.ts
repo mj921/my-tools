@@ -1,35 +1,27 @@
-import Shape from './Shape';
+import Shape, { type BaseShapeOptions } from './Shape';
+
+export interface GroupShapeOptions extends BaseShapeOptions {}
 
 class GroupShape extends Shape {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
   shapeList: Shape[] = [];
-  constructor({
-    x,
-    y,
-    width,
-    height,
-    dpr,
-  }: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-    dpr?: number;
-  }) {
-    super({ dpr });
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+  constructor({ ...restParams }: GroupShapeOptions) {
+    super({ ...restParams });
+  }
+  get type() {
+    return 'GroupShape';
   }
   render(ctx: CanvasRenderingContext2D): void {
     super.render(ctx);
     this.shapeList.forEach((shape) => {
-      shape.render(ctx);
+      shape.render(this.__ctx);
     });
+    ctx.drawImage(
+      this.__canvas,
+      this.x * this.dpr,
+      this.y * this.dpr,
+      this.width * this.dpr,
+      this.height * this.dpr,
+    );
   }
   update({
     x,
@@ -65,11 +57,29 @@ class GroupShape extends Shape {
 
   addShape(shape: Shape) {
     this.shapeList.push(shape);
+    shape.rootRender = this.rootRender;
+    shape.parentShape = this;
+    if (shape instanceof GroupShape) {
+      shape.updateChildRoot();
+    }
+  }
+  updateChildRoot() {
+    this.shapeList.forEach((shape) => {
+      shape.rootRender = this.rootRender;
+      if (shape instanceof GroupShape) {
+        shape.updateChildRoot();
+      }
+    });
   }
   removeShape(shape: Shape) {
     const index = this.shapeList.indexOf(shape);
     if (index > -1) {
       this.shapeList.splice(index, 1);
+      shape.rootRender = null;
+      shape.parentShape = null;
+      if (shape instanceof GroupShape) {
+        shape.updateChildRoot();
+      }
     }
   }
 }

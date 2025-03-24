@@ -1,13 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import ShapeEventTrigger from './EventTrigger';
+import { generateUUID } from 'three/src/math/MathUtils.js';
+import ShapeEventTrigger, { type ShapeMouseEvent } from './EventTrigger';
+import type ShapeRender from './ShapeRender';
 import type { IShape } from './interface';
+import type GroupShape from './GroupShape';
+
+export interface BaseShapeOptions {
+  dpr?: number;
+  allowDrop?: boolean;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
 
 class Shape extends ShapeEventTrigger implements IShape {
   visible = true;
   zIndex = 0;
+  uuid = generateUUID();
+  x: number;
+  y: number;
+  width: number;
+  height: number;
   dpr: number;
+  allowDrop: boolean;
   __canvas: OffscreenCanvas;
   __ctx: OffscreenCanvasRenderingContext2D;
+  rootRender: ShapeRender | null = null;
+  parentShape: GroupShape | null = null;
   get type() {
     return 'Shape';
   }
@@ -15,9 +35,17 @@ class Shape extends ShapeEventTrigger implements IShape {
     width = 0,
     height = 0,
     dpr = window.devicePixelRatio,
-  }: { width?: number; height?: number; dpr?: number } = {}) {
+    allowDrop = false,
+    x = 0,
+    y = 0,
+  }: BaseShapeOptions = {}) {
     super();
     this.dpr = dpr;
+    this.allowDrop = allowDrop;
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
     this.__canvas = new OffscreenCanvas(width * dpr, height * dpr);
     const ctx = this.__canvas.getContext('2d');
     if (ctx) {
@@ -46,15 +74,6 @@ class Shape extends ShapeEventTrigger implements IShape {
   isInShape(x: number, y: number) {
     console.log(x, y);
     return false;
-  }
-  onMouseEnter() {
-    this.emitEvent('mouseenter');
-  }
-  onMouseOut() {
-    this.emitEvent('mouseout');
-  }
-  onClick() {
-    this.emitEvent('click');
   }
 }
 

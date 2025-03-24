@@ -1,7 +1,7 @@
-import Shape from './Shape';
+import Shape, { type BaseShapeOptions } from './Shape';
 import { getDistance } from './utils';
 
-export interface RingShapeOptions {
+export interface RingShapeOptions extends BaseShapeOptions {
   rx: number;
   ry: number;
   outerRadius: number;
@@ -10,7 +10,6 @@ export interface RingShapeOptions {
   endAngle?: number;
   fillColor?: string;
   strokeColor?: string;
-  dpr?: number;
 }
 
 class RingShape extends Shape {
@@ -34,9 +33,15 @@ class RingShape extends Shape {
     endAngle = 360,
     fillColor = '#000',
     strokeColor = '#000',
-    dpr,
+    ...restParams
   }: RingShapeOptions) {
-    super({ dpr, width: outerRadius * 2, height: outerRadius * 2 });
+    super({
+      width: outerRadius * 2,
+      height: outerRadius * 2,
+      ...restParams,
+      x: rx - outerRadius,
+      y: ry - outerRadius,
+    });
     this.rx = rx;
     this.ry = ry;
     this.outerRadius = outerRadius;
