@@ -8,7 +8,8 @@ import MineClearanceIcon from '@/components/MjIcon/MineClearanceIcon.vue';
 import Merge2048Icon from '@/components/MjIcon/Merge2048Icon.vue';
 import DrawCircleIcon from '@/components/MjIcon/DrawCircleIcon.vue';
 import ETS2Icon from '@/components/MjIcon/ETS2Icon.vue';
-import { onMounted } from 'vue';
+import ChineseIcon from '@/components/MjIcon/ChineseIcon.vue';
+import ColorIcon from '@/components/MjIcon/ColorIcon.vue';
 
 const router = useRouter();
 const navs = [
@@ -29,6 +30,11 @@ const navs = [
         logo: MarkdownIcon,
         link: '/tool/markdown',
         name: 'markdown(未完善)',
+      },
+      {
+        logo: ColorIcon,
+        link: '/tool/color-generator',
+        name: '颜色生成器',
       },
     ],
   },
@@ -53,7 +59,12 @@ const navs = [
       {
         logo: DrawCircleIcon,
         link: '/game/drawcircle',
-        name: 'drawcircle',
+        name: '画圆',
+      },
+      {
+        logo: ChineseIcon,
+        link: '/game/chinese-combination',
+        name: '汉字合成',
       },
     ],
   },
@@ -154,6 +165,7 @@ const jumpLink = (item: { link: string; name: string }) => {
           overflow: hidden;
           transition: all ease 0.5s;
           line-height: 24px;
+          font-weight: bold;
           &::before {
             position: absolute;
             left: -150%;

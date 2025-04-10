@@ -206,6 +206,14 @@ const router = createRouter({
     },
 
     {
+      path: '/tool/color-generator',
+      name: 'tool-color-generator',
+      meta: {
+        title: '颜色生成器',
+      },
+      component: () => import('../views/Tools/ColorGenerator/ColorGenerator.vue'),
+    },
+    {
       path: '/dsp/blueprint',
       name: 'dsp-blueprint',
       meta: {
