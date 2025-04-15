@@ -204,6 +204,14 @@ const router = createRouter({
       },
       component: () => import('../views/Games/ChineseCombination/ChineseCombination.vue'),
     },
+    {
+      path: '/game/map-simulation',
+      name: 'game-map-simulation',
+      meta: {
+        title: '地图模拟',
+      },
+      component: () => import('../views/Games/MapSimulation/MapSimulation.vue'),
+    },
 
     {
       path: '/tool/color-generator',

@@ -17,6 +17,7 @@
           v-for="tab in fileTabs"
           :key="tab"
           @click="toggleFileTab(tab)"
+          @contextmenu.prevent="closeAll"
         >
           <span>{{ fileContents[tab].name }}</span>
           <close-icon @click="closeFileTab(tab, $event)" />
@@ -59,7 +60,7 @@ import MjMd from '@/components/MjMd/MjMd.vue';
 import MjPre from '@/components/MjPre/MjPre.vue';
 import MjSlider from '@/components/MjSlider/MjSlider.vue';
 import CloseIcon from '@/components/MjIcon/CloseIcon.vue';
-import type { MjTreeNodeData } from '@/components/MjTree/interface.ts';
+import type { MjTreeNodeData } from '@/components/MjTree/interface';
 
 const props = withDefaults(defineProps<{ showBase64?: boolean }>(), {
   showBase64: false,
@@ -83,6 +84,10 @@ const fileContents = ref<
 >({});
 const toggleFileTab = (tab: string) => {
   currTab.value = tab;
+};
+const closeAll = () => {
+  fileTabs.value = [];
+  currTab.value = '';
 };
 const closeFileTab = (tab: string, e: MouseEvent) => {
   e.stopPropagation();
