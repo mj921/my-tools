@@ -42,6 +42,10 @@ const classList = computed(() => {
     cursor: default;
     display: inline-flex;
     align-items: center;
+    width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
     .mj-icon {
       flex: 0 0 1em;
       margin-right: 4px;
@@ -50,6 +54,9 @@ const classList = computed(() => {
     .mj-tree-node-title-content {
       flex: 1;
       line-height: 1.5;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
     }
   }
 }

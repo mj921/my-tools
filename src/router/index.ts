@@ -139,6 +139,14 @@ const router = createRouter({
       component: () => import('../views/Tools/FileBrower/PerviewBase64.vue'),
     },
     {
+      path: '/tool/encryption',
+      name: 'tool-encryption',
+      meta: {
+        title: '加密',
+      },
+      component: () => import('../views/Tools/Encryption/Encryption.vue'),
+    },
+    {
       path: '/game/2048',
       name: 'game-2048',
       meta: {
