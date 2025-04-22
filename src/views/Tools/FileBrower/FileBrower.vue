@@ -45,6 +45,14 @@
             :src="fileContents[currTab].content"
             :style="{ opacity: fileContents[currTab].opacity / 100 }"
           />
+          <img
+            v-else-if="
+              showBase64 &&
+              /^https?:\/\/.+\.(jpg|jpeg|png|svg|bmpgif|webp)/.test(fileContents[currTab].content)
+            "
+            :src="fileContents[currTab].content"
+            :style="{ opacity: fileContents[currTab].opacity / 100 }"
+          />
           <mj-pre
             v-else
             :value="fileContents[currTab].content"
