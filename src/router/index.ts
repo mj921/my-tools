@@ -139,6 +139,27 @@ const router = createRouter({
       component: () => import('../views/Tools/FileBrower/PerviewBase64.vue'),
     },
     {
+      path: '/tool/giteebase64img',
+      name: 'tool-giteebase64img',
+      component: () => import('../views/Tools/FileBrower/GiteeBase64Perview.vue'),
+    },
+    {
+      path: '/tool/imghd',
+      name: 'tool-imghd',
+      meta: {
+        title: '图片高清修复',
+      },
+      component: () => import('../views/Tools/ImgHD/ImgHD.vue'),
+    },
+    {
+      path: '/tool/image',
+      name: 'tool-image',
+      meta: {
+        title: '图片工具',
+      },
+      component: () => import('../views/Tools/ImageTool/ImageTool.vue'),
+    },
+    {
       path: '/tool/encryption',
       name: 'tool-encryption',
       meta: {

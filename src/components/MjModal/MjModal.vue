@@ -1,7 +1,11 @@
 <template>
   <Teleport :to="popupContainer" :disabled="!renderToBody">
     <Transition name="mj-modal-scale">
-      <div class="mj-modal-container" v-if="!unmountOnClose || visible" v-show="visible">
+      <div
+        :class="['mj-modal-container', attrs.class]"
+        v-if="!unmountOnClose || visible"
+        v-show="visible"
+      >
         <div class="mj-modal-mask" :style="maskStyle" v-if="mask" @click="onMaskClick"></div>
         <div class="mj-modal-scroll">
           <div class="mj-modal-wrapper">
@@ -59,9 +63,15 @@
 import CloseIcon from '@/components/MjIcon/CloseIcon.vue';
 import MjButton from '@/components/MjButton/MjButton.vue';
 import type { MjModalProps, MjModalEmits, MjModalSlots } from './interface';
-import { computed } from 'vue';
+import { computed, useAttrs } from 'vue';
+
+defineOptions({
+  inheritAttrs: false,
+});
 
 const visible = defineModel<boolean>({ required: true });
+
+const attrs = useAttrs();
 
 const props = withDefaults(defineProps<MjModalProps>(), {
   renderToBody: true,

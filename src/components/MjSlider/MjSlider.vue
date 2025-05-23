@@ -15,7 +15,6 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import type { MjSliderProps } from './interface';
-import { reactive } from 'vue';
 import { onMounted } from 'vue';
 import { ref } from 'vue';
 
