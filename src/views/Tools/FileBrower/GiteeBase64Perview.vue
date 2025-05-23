@@ -67,8 +67,8 @@
     </template>
   </div>
   <div class="file-brower" v-else>
-    <mj-input v-model="clientId" placeholder="client_id" />
-    <mj-input v-model="clientSecret" placeholder="client_secret" />
+    <mj-input v-model="clientId" placeholder="client_id" style="width: calc(50% - 60px)" />
+    <mj-input v-model="clientSecret" placeholder="client_secret" style="width: calc(50% - 60px)" />
     <mj-button @click="login">登录</mj-button>
   </div>
 </template>
@@ -105,8 +105,8 @@ try {
 const token = ref(localStorage.getItem('gitee_access_token') || '');
 
 const url = ref(cache?.url || '');
-const clientId = ref('');
-const clientSecret = ref('');
+const clientId = ref(localStorage.getItem('gitee_client_id') || '');
+const clientSecret = ref(localStorage.getItem('gitee_client_secret') || '');
 const login = () => {
   if (clientId.value && clientSecret.value) {
     if (code) {
@@ -125,6 +125,7 @@ const login = () => {
       })
         .then((response) => response.json())
         .then((data) => {
+          token.value = data.access_token;
           localStorage.setItem('gitee_access_token', data.access_token);
           localStorage.setItem('gitee_refresh_token', data.refresh_token);
         })
@@ -132,10 +133,15 @@ const login = () => {
           console.error('登录失败');
         });
     } else {
+      localStorage.setItem('gitee_client_id', clientId.value);
+      localStorage.setItem('gitee_client_secret', clientSecret.value);
       window.location.href = `https://gitee.com/oauth/authorize?client_id=${clientId.value}&redirect_uri=${encodeURIComponent(`${window.location.origin}${window.location.pathname}`)}&response_type=code`;
     }
   }
 };
+if (clientId.value && clientSecret.value && !token.value && code) {
+  login();
+}
 const logout = () => {
   localStorage.removeItem('gitee_access_token');
   localStorage.removeItem('gitee_refresh_token');
