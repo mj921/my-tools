@@ -104,6 +104,51 @@ try {
 }
 const token = ref(localStorage.getItem('gitee_access_token') || '');
 
+const refreshToken = () => {
+  const refreshToken = localStorage.getItem('gitee_refresh_token');
+  if (refreshToken) {
+    fetch('https://gitee.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        token.value = data.access_token;
+        localStorage.setItem('gitee_access_token', data.access_token);
+        localStorage.setItem('gitee_refresh_token', data.refresh_token);
+        localStorage.setItem(
+          'gitee_token_expires',
+          ((data.created_at + data.expires_in - 600) * 1000).toString(),
+        );
+      })
+      .catch(() => {
+        console.error('刷新令牌失败');
+      });
+  }
+};
+
+if (localStorage.getItem('gitee_access_token')) {
+  if (
+    !localStorage.getItem('gitee_token_expires') ||
+    Date.now() >= Number(localStorage.getItem('gitee_token_expires'))
+  ) {
+    if (localStorage.getItem('gitee_refresh_token')) {
+      refreshToken();
+    } else {
+      localStorage.removeItem('gitee_access_token');
+      localStorage.removeItem('gitee_refresh_token');
+      localStorage.removeItem('gitee_token_expires');
+      token.value = '';
+    }
+  }
+}
+
 const url = ref(cache?.url || '');
 const clientId = ref(localStorage.getItem('gitee_client_id') || '');
 const clientSecret = ref(localStorage.getItem('gitee_client_secret') || '');
@@ -128,6 +173,10 @@ const login = () => {
           token.value = data.access_token;
           localStorage.setItem('gitee_access_token', data.access_token);
           localStorage.setItem('gitee_refresh_token', data.refresh_token);
+          localStorage.setItem(
+            'gitee_token_expires',
+            ((data.created_at + data.expires_in - 600) * 1000).toString(),
+          );
         })
         .catch(() => {
           console.error('登录失败');
