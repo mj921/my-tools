@@ -18,7 +18,7 @@
       <option
         v-else
         :key="`option-$${(item as MjSelectOptionData).value ?? item}`"
-        :value="(item as MjSelectOptionData) ?? item"
+        :value="(item as MjSelectOptionData).value ?? item"
       >
         {{ (item as MjSelectOptionData).label ?? (item as MjSelectOptionData).value ?? item }}
       </option>

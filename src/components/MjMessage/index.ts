@@ -1,3 +1,3 @@
-import message from './mjmessage';
+import message from './MjMessage';
 
 export default message;

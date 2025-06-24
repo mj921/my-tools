@@ -241,7 +241,6 @@ const router = createRouter({
       },
       component: () => import('../views/Games/MapSimulation/MapSimulation.vue'),
     },
-
     {
       path: '/tool/color-generator',
       name: 'tool-color-generator',
@@ -249,6 +248,14 @@ const router = createRouter({
         title: '颜色生成器',
       },
       component: () => import('../views/Tools/ColorGenerator/ColorGenerator.vue'),
+    },
+    {
+      path: '/tool/image-generator',
+      name: 'tool-image-generator',
+      meta: {
+        title: '图片生成器',
+      },
+      component: () => import('../views/Tools/GenerateImage/GenerateImage.vue'),
     },
     {
       path: '/dsp/blueprint',

@@ -6,6 +6,7 @@
     :placeholder="placeholder"
     @input="onChange"
     :disabled="disabled"
+    :rows="rows"
   />
 </template>
 <script lang="ts" setup>

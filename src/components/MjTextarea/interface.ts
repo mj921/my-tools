@@ -2,6 +2,7 @@ export interface MjTextareaProps {
   disabled?: boolean;
   placeholder?: string;
   resize?: 'both' | 'horizontal' | 'vertical' | 'none';
+  rows?: number;
 }
 
 export interface MjTextareaEmits {

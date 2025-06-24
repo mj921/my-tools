@@ -13,6 +13,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "crypto-js": "^4.2.0",
     "fflate": "^0.8.2",
     "lunar-typescript": "^1.7.6",
     "pinia": "^2.1.7",
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
     "@tsconfig/node20": "^20.1.4",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.14.5",
     "@types/pinyin": "^2.10.2",
     "@types/three": "^0.172.0",
