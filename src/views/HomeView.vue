@@ -10,6 +10,7 @@ import DrawCircleIcon from '@/components/MjIcon/DrawCircleIcon.vue';
 import ETS2Icon from '@/components/MjIcon/ETS2Icon.vue';
 import ChineseIcon from '@/components/MjIcon/ChineseIcon.vue';
 import ColorIcon from '@/components/MjIcon/ColorIcon.vue';
+import TextToImageIcon from '@/components/MjIcon/TextToImageIcon.vue';
 
 const router = useRouter();
 const navs = [
@@ -35,6 +36,11 @@ const navs = [
         logo: ColorIcon,
         link: '/tool/color-generator',
         name: '颜色生成器',
+      },
+      {
+        logo: TextToImageIcon,
+        link: '/tool/image-generator',
+        name: '文生图',
       },
     ],
   },

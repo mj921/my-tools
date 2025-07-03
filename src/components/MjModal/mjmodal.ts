@@ -34,6 +34,7 @@ const modal = (config: MjModalConfig) => {
   box.classList.add('mj-modal-wrapper');
   document.body.appendChild(box);
   const props = {
+    title: config.title,
     modelValue: true,
     popupContainer: box,
     /** 确认按钮的内容 */
@@ -54,7 +55,7 @@ const modal = (config: MjModalConfig) => {
     },
   };
   const vm = h<MjModalProps>(MjModal, props, {
-    default: () => config.title,
+    default: () => config.content,
   });
   render(vm, box);
   close = () => {
@@ -93,3 +94,18 @@ const modal = (config: MjModalConfig) => {
 };
 
 export default modal;
+
+modal.confirm = ({ onOk, onCancel, ...config }: MjModalConfig) =>
+  new Promise((resolve, reject) =>
+    modal({
+      ...config,
+      onOk: (...rest) => {
+        onOk?.();
+        resolve(rest);
+      },
+      onCancel: (...rest) => {
+        onCancel?.();
+        reject(rest);
+      },
+    }),
+  );

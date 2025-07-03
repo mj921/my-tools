@@ -7,7 +7,8 @@
     @input="onChange"
     :disabled="disabled"
     :rows="rows"
-  />
+    @keyup.enter="emits('enter', $event)"
+  ></textarea>
 </template>
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue';

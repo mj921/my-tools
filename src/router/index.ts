@@ -258,6 +258,14 @@ const router = createRouter({
       component: () => import('../views/Tools/GenerateImage/GenerateImage.vue'),
     },
     {
+      path: '/tool/deepseek/:groupKey?/:chatKey?',
+      name: 'tool-deepseek',
+      meta: {
+        title: 'deepseek',
+      },
+      component: () => import('../views/Tools/DeepSeek/DeepSeek.vue'),
+    },
+    {
       path: '/dsp/blueprint',
       name: 'dsp-blueprint',
       meta: {

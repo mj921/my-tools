@@ -7,4 +7,5 @@ export interface MjTextareaProps {
 
 export interface MjTextareaEmits {
   (e: 'change', value?: string | number): void;
+  (e: 'enter', ev: KeyboardEvent): void;
 }
