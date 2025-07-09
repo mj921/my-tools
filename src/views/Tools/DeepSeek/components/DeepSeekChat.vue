@@ -15,10 +15,15 @@
             (chatRecord.reason || (chatRecord.key === streamKey && streamReason))
           "
         >
-          {{ chatRecord.key === streamKey ? streamReason : chatRecord.reason }}
+          <!-- {{ chatRecord.key === streamKey ? streamReason : chatRecord.reason }} -->
+          <MjMd :content="chatRecord.key === streamKey ? streamReason : chatRecord.reason || ''" />
         </div>
         <div class="chat-content-content">
-          {{ chatRecord.key === streamKey ? streamContent : chatRecord.content }}
+          <template v-if="chatRecord.role === 'user'">{{ chatRecord.content }}</template>
+          <MjMd
+            v-else
+            :content="chatRecord.key === streamKey ? streamContent : chatRecord.content || ''"
+          />
         </div>
       </div>
     </div>
@@ -46,6 +51,7 @@
 import type { DSChat, DSGroup, DSContent, DSMessageItem } from '../db';
 import { inject, nextTick, onBeforeUnmount, onMounted, ref, toRefs, watch } from 'vue';
 import type DSDbTool from '../db';
+import MjMd from '@/components/MjMd/MjMd.vue';
 
 const contentScroll = ref<HTMLDivElement>();
 const emits = defineEmits<{

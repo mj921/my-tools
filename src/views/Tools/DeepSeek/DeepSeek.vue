@@ -192,9 +192,11 @@ const reCreate = (reContent: DSContent, historyList: DSMessageItem[]) => {
 };
 const modifyContentItem = ref<DSContent | null>(null);
 const modifyContent = async (oldContent: DSContent) => {
-  sendContent.value = oldContent.content;
-  modifyContentItem.value = oldContent;
-  await dbtool.updateContent(oldContent.key, { isStream: true, content: '', reason: '' });
+  if (oldContent.useContent) {
+    sendContent.value = oldContent.useContent;
+    modifyContentItem.value = oldContent;
+    await dbtool.updateContent(oldContent.key, { isStream: true, content: '', reason: '' });
+  }
 };
 const send = () => {
   if (sendContent.value) {
@@ -218,6 +220,9 @@ const send = () => {
                 chatKey: res.data!.chatKey,
               },
             });
+          }
+          if (modifyContentItem.value) {
+            modifyContentItem.value = null;
           }
         }
       });
