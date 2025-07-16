@@ -1,6 +1,21 @@
 <template>
   <div class="deepseek">
-    <div class="deepseek-sider">
+    <div
+      v-if="isMobile"
+      class="deepseek-mask"
+      v-show="silderVisible"
+      @click="silderVisible = false"
+    >
+      <div class="deepseek-sider">
+        <div class="deepseek-list">
+          <DeepSeekGroup />
+        </div>
+        <div class="deepseek-sider-btns">
+          <dl class="deepseek-sider-btn" @click="settingVisible = true">设置</dl>
+        </div>
+      </div>
+    </div>
+    <div class="deepseek-sider" v-else>
       <div class="deepseek-list">
         <DeepSeekGroup />
       </div>
@@ -9,6 +24,7 @@
       </div>
     </div>
     <div class="deepseek-container">
+      <MenuIcon color="#fff" v-if="isMobile" @click="silderVisible = true" />
       <template v-if="route.params.chatKey">
         <DeepSeekChat
           v-if="selectChat && selectGroup"
@@ -64,6 +80,7 @@ import { useRoute, useRouter } from 'vue-router';
 import DeepSeekGroupDetail from './components/DeepSeekGroupDetail.vue';
 import DeepSeekChat from './components/DeepSeekChat.vue';
 import MjTextarea from '@/components/MjTextarea/MjTextarea.vue';
+import MenuIcon from '@/components/MjIcon/MenuIcon.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -72,6 +89,8 @@ const selectGroup = ref<DSGroup | null>(null);
 const selectChat = ref<DSChat | null>(null);
 const settingVisible = ref(false);
 const sendContent = ref('');
+const isMobile = ref(window.innerWidth <= 750);
+const silderVisible = ref(false);
 provide('ds', {
   dbtool,
 });
@@ -82,7 +101,6 @@ const groupUpdate = (group: DSGroup) => {
 const config = reactive<Record<string, string>>({});
 dbtool.getConfig().then((res = []) => {
   res.forEach((el) => (config[el.name] = el.value));
-  console.log(res);
 });
 watch([settingVisible], () => {
   if (!settingVisible.value) {
@@ -349,6 +367,28 @@ watch(
           cursor: not-allowed;
         }
       }
+    }
+  }
+}
+@media screen and (max-width: 750px) {
+  .deepseek {
+    display: block;
+    position: relative;
+    .deepseek-sider {
+      flex: initial;
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 260px;
+      max-width: 90%;
+      z-index: 99;
+    }
+    .mj-menu-icon {
+      position: fixed;
+      left: 16px;
+      top: 16px;
+      font-size: 24px;
     }
   }
 }

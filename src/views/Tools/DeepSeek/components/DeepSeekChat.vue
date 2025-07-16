@@ -190,6 +190,12 @@ onBeforeUnmount(() => {
       .chat-content-content {
         font-size: 16px;
       }
+      .mj-md {
+        padding: 0;
+        p {
+          margin-left: 0;
+        }
+      }
     }
   }
 
