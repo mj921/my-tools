@@ -6,7 +6,7 @@
       v-show="silderVisible"
       @click="silderVisible = false"
     >
-      <div class="deepseek-sider">
+      <div class="deepseek-sider" @click.stop>
         <div class="deepseek-list">
           <DeepSeekGroup />
         </div>
