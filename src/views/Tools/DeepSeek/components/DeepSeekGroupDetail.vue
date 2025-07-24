@@ -9,6 +9,11 @@
     </div>
     <div class="group-chat-list">
       <div
+        v-long-touch="{
+          handler: (e: Touch) => {
+            showMenu(chat, e);
+          },
+        }"
         class="group-chat-item"
         v-for="chat in chatList"
         :key="chat.key"
@@ -53,6 +58,7 @@ import RightIcon from '@/components/MjIcon/RightIcon.vue';
 import type DSDbTool from '../db';
 import message from '@/components/MjMessage';
 import modal from '@/components/MjModal/mjmodal';
+import vLongTouch from '@/directives/vLongTouch';
 
 const emits = defineEmits<{ (e: 'groupUpdate', group: DSGroup): void }>();
 const router = useRouter();
@@ -65,7 +71,7 @@ const sysContent = ref('');
 const menuChat = ref<DSChat | null>(null);
 const menuPosition = ref({ x: 0, y: 0 });
 
-const showMenu = (item: DSChat, e: MouseEvent) => {
+const showMenu = (item: DSChat, e: MouseEvent | Touch) => {
   menuChat.value = item;
   menuPosition.value = { x: e.clientX, y: e.clientY };
 };
@@ -180,6 +186,9 @@ onBeforeUnmount(() => {
       .group-chat-content {
         font-size: 12px;
         opacity: 0.7;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
       }
     }
   }

@@ -49,9 +49,9 @@
         <MjTextarea
           resize="vertical"
           :rows="3"
-          placeholder="在这里提问新建对话"
+          :placeholder="route.params.chatKey ? '在这里发送消息' : '在这里提问新建对话'"
           v-model="sendContent"
-          @enter="send"
+          @enter="sendEnter"
         />
         <div class="ds-send-btns">
           <button :disabled="!sendContent" class="ds-send-btn" @click="send">发送</button>
@@ -244,6 +244,12 @@ const send = () => {
           }
         }
       });
+  }
+};
+const sendEnter = (e: KeyboardEvent) => {
+  if (!e.shiftKey) {
+    e.preventDefault();
+    send();
   }
 };
 watch(

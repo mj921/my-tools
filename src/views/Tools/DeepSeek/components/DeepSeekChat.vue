@@ -6,6 +6,11 @@
         v-for="chatRecord in contentList"
         :key="chatRecord.key"
         :id="`chatRecord_${chatRecord.key}`"
+        v-long-touch="{
+          handler: (e: Touch) => {
+            showMenu(chatRecord, e);
+          },
+        }"
         @contextmenu.prevent="showMenu(chatRecord, $event)"
       >
         <div
@@ -33,6 +38,7 @@
       v-show="menuContent"
       :style="{ left: `${menuPosition.x}px`, top: `${menuPosition.y}px` }"
     >
+      <dl @click="copy()">复制</dl>
       <dl
         v-if="
           menuContent?.role === 'user' &&
@@ -52,6 +58,8 @@ import type { DSChat, DSGroup, DSContent, DSMessageItem } from '../db';
 import { inject, nextTick, onBeforeUnmount, onMounted, ref, toRefs, watch } from 'vue';
 import type DSDbTool from '../db';
 import MjMd from '@/components/MjMd/MjMd.vue';
+import vLongTouch from '@/directives/vLongTouch';
+import message from '@/components/MjMessage';
 
 const contentScroll = ref<HTMLDivElement>();
 const emits = defineEmits<{
@@ -72,7 +80,7 @@ const contentList = ref<DSContent[]>([]);
 const menuContent = ref<DSContent | null>(null);
 const menuPosition = ref({ x: 0, y: 0 });
 
-const showMenu = (item: DSContent, e: MouseEvent) => {
+const showMenu = (item: DSContent, e: MouseEvent | Touch) => {
   menuContent.value = item;
   menuPosition.value = { x: e.clientX, y: e.clientY };
 };
@@ -94,6 +102,13 @@ const delContent = () => {
   if (menuContent.value) {
     dbtool.deleteContent(menuContent.value.key).then(() => {
       getContentList();
+    });
+  }
+};
+const copy = () => {
+  if (menuContent.value) {
+    navigator.clipboard.writeText(menuContent.value.content).then(() => {
+      message.success('复制成功');
     });
   }
 };
