@@ -35,8 +35,9 @@ const classNames = computed(() => {
   return classList;
 });
 const toggle = () => {
-  model.value = model.value === props.checkedValue ? props.uncheckedValue : props.checkedValue;
-  emits('change', model.value);
+  const flag = model.value === props.checkedValue ? props.uncheckedValue : props.checkedValue;
+  model.value = flag;
+  emits('change', flag);
 };
 </script>
 <style scoped lang="scss">

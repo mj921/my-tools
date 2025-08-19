@@ -9,7 +9,9 @@ import type { MjMdParseLineItem, MjMdProps, MjMdListDomItem } from './interface'
 import MjMdDom from './MjMdDom.vue';
 import { generateUuid } from '@/utils';
 
-const props = defineProps<MjMdProps>();
+const props = withDefaults(defineProps<MjMdProps>(), {
+  disabledTypes: () => [],
+});
 
 const parseLine = (line: string, startLevel = 0) => {
   const map: Record<string, MjMdParseLineItem> = {};
@@ -202,6 +204,7 @@ const parseLine = (line: string, startLevel = 0) => {
     let flag = true;
     for (let i = 0; i < matchList.length && flag; i++) {
       const { testReg, matchReg, type, matchHandle } = matchList[i];
+      if (props.disabledTypes.includes(type)) continue;
       if (testReg.test(currentLine)) {
         if (typeof matchHandle === 'function') {
           matchHandle(currentLine.match(matchReg), lineItem);

@@ -4,6 +4,28 @@
     <dt class="ds-setting-title">API设置</dt>
     <div class="ds-setting-card">
       <dl class="ds-setting-row">
+        <label class="ds-setting-label" for="ds-aiType">aiType</label>
+        <select
+          class="ds-setting-select"
+          id="ds-aiType"
+          placeholder="请选择appid"
+          v-model="config.aiType"
+        >
+          <option value="deepseek">deepseek</option>
+          <option value="nebulablock">nebulablock</option>
+        </select>
+      </dl>
+      <dl class="ds-setting-row" v-if="config.aiType === 'nebulablock'">
+        <label class="ds-setting-label" for="ds-api">appid</label>
+        <input
+          class="ds-setting-ipt"
+          id="ds-api"
+          placeholder="请输入appid"
+          v-model="config.nebulablockAppid"
+          autocomplete="off"
+        />
+      </dl>
+      <dl class="ds-setting-row" v-else>
         <label class="ds-setting-label" for="ds-api">appid</label>
         <input
           class="ds-setting-ipt"
@@ -14,10 +36,10 @@
         />
       </dl>
       <dl class="ds-setting-row">
-        <label class="ds-setting-label" for="ds-api">最大token</label>
+        <label class="ds-setting-label" for="ds-maxToken">最大token</label>
         <input
           class="ds-setting-ipt"
-          id="ds-api"
+          id="ds-maxToken"
           placeholder="最大token"
           v-model="config.maxToken"
           autocomplete="off"
@@ -107,6 +129,14 @@ const save = () => {
         &:focus {
           text-align: left;
         }
+      }
+      .ds-setting-select {
+        flex: 1;
+        background-color: transparent;
+        border: none;
+        text-align: right;
+        outline: none;
+        color: var(--deepseek-font-color);
       }
     }
   }

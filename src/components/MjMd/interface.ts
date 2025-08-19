@@ -1,5 +1,6 @@
 export interface MjMdProps {
   content: string;
+  disabledTypes?: string[];
 }
 
 export interface MjMdParseLineItem {

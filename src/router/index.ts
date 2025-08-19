@@ -316,6 +316,14 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/tool/alarm-clock',
+      name: 'tool-alarm-clock',
+      meta: {
+        title: '闹钟',
+      },
+      component: () => import('../views/Tools/AlarmClock/AlarmClock.vue'),
+    },
   ],
 });
 

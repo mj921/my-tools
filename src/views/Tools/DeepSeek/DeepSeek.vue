@@ -54,6 +54,15 @@
           @enter="sendEnter"
         />
         <div class="ds-send-btns">
+          <MjSelect
+            v-model="selectedModal"
+            :options="
+              AiModelList[(config.aiType || 'deepseek') as AiType].map((el) => ({
+                label: el,
+                value: el,
+              }))
+            "
+          />
           <button :disabled="!sendContent" class="ds-send-btn" @click="send">发送</button>
         </div>
       </div>
@@ -81,6 +90,8 @@ import DeepSeekGroupDetail from './components/DeepSeekGroupDetail.vue';
 import DeepSeekChat from './components/DeepSeekChat.vue';
 import MjTextarea from '@/components/MjTextarea/MjTextarea.vue';
 import MenuIcon from '@/components/MjIcon/MenuIcon.vue';
+import { AiApiUrl, AiAppid, AiMaxToken, AiModelList, type AiType } from './aiConfig';
+import MjSelect from '@/components/MjSelect/MjSelect.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -91,6 +102,7 @@ const settingVisible = ref(false);
 const sendContent = ref('');
 const isMobile = ref(window.innerWidth <= 750);
 const silderVisible = ref(false);
+const selectedModal = ref('');
 provide('ds', {
   dbtool,
 });
@@ -101,6 +113,7 @@ const groupUpdate = (group: DSGroup) => {
 const config = reactive<Record<string, string>>({});
 dbtool.getConfig().then((res = []) => {
   res.forEach((el) => (config[el.name] = el.value));
+  selectedModal.value = AiModelList[(config.aiType || 'deepseek') as AiType][0];
 });
 watch([settingVisible], () => {
   if (!settingVisible.value) {
@@ -117,17 +130,19 @@ const answer = reactive({
 });
 
 const fetchDeepseek = (historyContent: DSMessageItem[]) => {
-  fetch('https://api.deepseek.com/chat/completions', {
+  const aiType = (config.aiType || 'deepseek') as AiType;
+  let prev = '';
+  fetch(`${AiApiUrl[aiType]}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.appid}`,
+      Authorization: `Bearer ${config[AiAppid[aiType]]}`,
       mode: 'no-cors',
     },
     body: JSON.stringify({
       messages: historyContent,
-      model: 'deepseek-reasoner',
-      max_tokens: +config.maxToken || 4096,
+      model: selectedModal.value,
+      max_tokens: +config.maxToken || AiMaxToken[aiType],
       stream: true,
     }),
   })
@@ -160,7 +175,8 @@ const fetchDeepseek = (historyContent: DSMessageItem[]) => {
           }
 
           // 处理数据块
-          const chunk = decoder.decode(value, { stream: true });
+          const chunk = prev + decoder.decode(value, { stream: true });
+          prev = '';
           const lines = chunk.split('\n').filter((line) => line.trim());
 
           for (const line of lines) {
@@ -181,6 +197,7 @@ const fetchDeepseek = (historyContent: DSMessageItem[]) => {
                   answer.reasoning += delta.reasoning_content;
                 }
               } catch (err) {
+                prev += line;
                 console.error('解析错误:', err);
               }
             }
@@ -357,8 +374,14 @@ watch(
       color: var(--deepseek-font-color);
     }
     .ds-send-btns {
-      text-align: right;
+      display: flex;
+      justify-content: flex-end;
+      .mj-select {
+        max-width: 350px;
+        margin-right: 8px;
+      }
       .ds-send-btn {
+        flex: 0;
         padding: 8px 24px;
         background-color: dodgerblue;
         border: none;
@@ -368,6 +391,7 @@ watch(
         line-height: 1em;
         border-radius: 4px;
         cursor: pointer;
+        white-space: nowrap;
         &:disabled {
           background-color: #7195d8;
           cursor: not-allowed;

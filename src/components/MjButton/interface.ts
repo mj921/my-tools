@@ -10,6 +10,7 @@ export interface MjButtonProps {
   long?: boolean;
   disabled?: boolean;
   loading?: boolean;
+  disabledType?: string[];
 }
 
 export interface MjButtonSlots {

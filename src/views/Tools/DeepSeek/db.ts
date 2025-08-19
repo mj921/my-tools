@@ -93,7 +93,6 @@ export const getStoreAll = <D>(
 ): Promise<D[]> =>
   new Promise((resolve, reject) => {
     const res = index.getAll(query, count);
-    console.log(res);
     res.onsuccess = () => resolve(res.result as D[]);
     res.onerror = reject;
   });
@@ -125,24 +124,28 @@ class DSDbTool {
       };
       request.onupgradeneeded = (event) => {
         const db: IDBDatabase = (event?.target as any)?.result;
-        // 创建一个对象存储来存储我们客户的相关信息，我们将“ssn”作为键路径
-        //
-        const configStore = db.createObjectStore('config', { keyPath: 'name' });
-
-        // 创建一个索引以通过姓名来搜索客户。名字可能会重复，所以我们不能使用 unique 索引。
-        configStore.createIndex('name', 'name', { unique: true });
-
-        const groupStore = db.createObjectStore('group', { autoIncrement: true });
-        groupStore.createIndex('name', 'name', { unique: true });
-
-        const chatStore = db.createObjectStore('chat', { autoIncrement: true });
-        chatStore.createIndex('name', 'name', { unique: false });
-        chatStore.createIndex('groupKey', 'groupKey', { unique: false });
-
-        const contentStore = db.createObjectStore('content', { autoIncrement: true });
-        contentStore.createIndex('role', 'role', { unique: false });
-        contentStore.createIndex('chatKey', 'chatKey', { unique: false });
-        contentStore.createIndex('userContentKey', 'userContentKey', { unique: false });
+        const oldVersion = event.oldVersion;
+        if (oldVersion < 1) {
+          if (!db.objectStoreNames.contains('config')) {
+            const configStore = db.createObjectStore('config', { keyPath: 'name' });
+            configStore.createIndex('name', 'name', { unique: true });
+          }
+          if (!db.objectStoreNames.contains('group')) {
+            const groupStore = db.createObjectStore('group', { autoIncrement: true });
+            groupStore.createIndex('name', 'name', { unique: true });
+          }
+          if (!db.objectStoreNames.contains('chat')) {
+            const chatStore = db.createObjectStore('chat', { autoIncrement: true });
+            chatStore.createIndex('name', 'name', { unique: false });
+            chatStore.createIndex('groupKey', 'groupKey', { unique: false });
+          }
+          if (!db.objectStoreNames.contains('content')) {
+            const contentStore = db.createObjectStore('content', { autoIncrement: true });
+            contentStore.createIndex('role', 'role', { unique: false });
+            contentStore.createIndex('chatKey', 'chatKey', { unique: false });
+            contentStore.createIndex('userContentKey', 'userContentKey', { unique: false });
+          }
+        }
       };
     });
   }

@@ -21,13 +21,17 @@
           "
         >
           <!-- {{ chatRecord.key === streamKey ? streamReason : chatRecord.reason }} -->
-          <MjMd :content="chatRecord.key === streamKey ? streamReason : chatRecord.reason || ''" />
+          <MjMd
+            :content="chatRecord.key === streamKey ? streamReason : chatRecord.reason || ''"
+            :disabledTypes="['a']"
+          />
         </div>
         <div class="chat-content-content">
           <template v-if="chatRecord.role === 'user'">{{ chatRecord.content }}</template>
           <MjMd
             v-else
             :content="chatRecord.key === streamKey ? streamContent : chatRecord.content || ''"
+            :disabledTypes="['a']"
           />
         </div>
       </div>
