@@ -358,7 +358,7 @@ const mdDoms = computed(() => {
           level: lastUl.level + 1,
         };
         list.push(eleItem);
-        lastUl.children = eleItem.children[0].children;
+        lastUl.children = eleItem.children[0]?.children;
       }
     }
   };

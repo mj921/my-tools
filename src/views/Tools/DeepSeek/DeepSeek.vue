@@ -43,7 +43,7 @@
 
       <div
         v-if="route.params.groupKey"
-        :style="{ zIndex: modifyContentItem ? 99999999 : 0 }"
+        :style="{ zIndex: modifyContentItem.userContent ? 99999999 : 0 }"
         @click.stop
       >
         <MjTextarea
@@ -63,17 +63,17 @@
               }))
             "
           />
-          <button :disabled="!sendContent" class="ds-send-btn" @click="send">发送</button>
+          <button :disabled="!sendContent" class="ds-send-btn" @click.stop="send">发送</button>
         </div>
       </div>
     </div>
     <DeepSeekSetting :config="config" v-model="settingVisible" />
     <div
       class="deepseek-mask"
-      v-show="modifyContentItem"
+      v-show="modifyContentItem.userContent"
       @click="
         () => {
-          modifyContentItem = null;
+          modifyContentItem = { userContent: null, assContent: null };
           sendContent = '';
         }
       "
@@ -225,12 +225,14 @@ const reCreate = (reContent: DSContent, historyList: DSMessageItem[]) => {
   answer.reasoning = '';
   fetchDeepseek(historyList);
 };
-const modifyContentItem = ref<DSContent | null>(null);
-const modifyContent = async (oldContent: DSContent) => {
-  if (oldContent.useContent) {
-    sendContent.value = oldContent.useContent;
-    modifyContentItem.value = oldContent;
-    await dbtool.updateContent(oldContent.key, { isStream: true, content: '', reason: '' });
+const modifyContentItem = ref<{ userContent: DSContent | null; assContent: DSContent | null }>({
+  userContent: null,
+  assContent: null,
+});
+const modifyContent = async (userContent: DSContent, assContent: DSContent) => {
+  if (userContent.content) {
+    sendContent.value = userContent.content;
+    modifyContentItem.value = { userContent, assContent };
   }
 };
 const send = () => {
@@ -240,7 +242,8 @@ const send = () => {
         content: sendContent.value.replace(/(^\s+|\s+$)/g, ''),
         groupKey: selectGroup.value!.key,
         chatKey: selectChat.value?.key ?? undefined,
-        assContentKey: modifyContentItem.value?.key,
+        assContentKey: modifyContentItem.value?.assContent?.key,
+        userContentKey: modifyContentItem.value?.userContent?.key,
       })
       .then((res) => {
         if (res.success) {
@@ -256,8 +259,8 @@ const send = () => {
               },
             });
           }
-          if (modifyContentItem.value) {
-            modifyContentItem.value = null;
+          if (modifyContentItem.value.userContent) {
+            modifyContentItem.value = { userContent: null, assContent: null };
           }
         }
       });

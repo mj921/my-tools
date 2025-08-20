@@ -228,8 +228,6 @@ class DSDbTool {
     const res = await addData(groupStore, { name, sysPreset });
     return await new Promise((resolve, reject) => {
       transaction.oncomplete = () => {
-        console.log(transaction);
-
         resolve({ msg: '添加成功', success: true, data: res });
         db.close();
       };
@@ -334,11 +332,13 @@ class DSDbTool {
     groupKey,
     chatKey,
     assContentKey,
+    userContentKey: oldUserContentKey,
   }: {
     content: string;
     groupKey: number;
     chatKey?: number;
     assContentKey?: number;
+    userContentKey?: number;
   }): Promise<{
     msg: string;
     success: boolean;
@@ -355,7 +355,7 @@ class DSDbTool {
       return Promise.resolve({ msg: '请配置appid', success: false, data: null });
     }
     const chatStore = transaction.objectStore('chat');
-    const contenStore = transaction.objectStore('content');
+    const contentStore = transaction.objectStore('content');
     const groupStore = transaction.objectStore('group');
     const group = await getStoreData<DSGroup>(groupStore, groupKey);
     let historyContent: DSMessageItem[] = [];
@@ -367,8 +367,8 @@ class DSDbTool {
     }
     let historyList: DSContent[] = [];
     if (chatKey) {
-      const contentChatKeyIndex = contenStore.index('chatKey');
-      historyList = await getStoreAll<DSContent>(contentChatKeyIndex, chatKey);
+      const chatKeyIndex = contentStore.index('chatKey');
+      historyList = await getStoreAllWithKey<DSContent>(chatKeyIndex, chatKey);
       historyContent = historyContent.concat(
         historyList.map((el) => ({ role: el.role, content: el.content })),
       );
@@ -379,7 +379,45 @@ class DSDbTool {
         lastMsg: '',
       });
     }
-    if (assContentKey) {
+    const chat = await getStoreData<DSChat>(chatStore, chatKey);
+    let contentKey = assContentKey;
+    let userContentKey = oldUserContentKey;
+    if (oldUserContentKey) {
+      const oldContent = await getStoreData<DSContent>(contentStore, oldUserContentKey);
+      oldContent.content = content;
+      await updateData(contentStore, oldContent, oldUserContentKey);
+    } else {
+      userContentKey = await addData<number, Omit<DSContent, 'key'>>(contentStore, {
+        role: 'user',
+        content,
+        sort: (historyList[historyList.length - 1]?.sort || 0) + 1,
+        chatKey: chatKey || 0,
+      });
+    }
+
+    if (!assContentKey || historyList[historyList.length - 1]?.key !== assContentKey) {
+      contentKey = await addData<number, Omit<DSContent, 'key'>>(contentStore, {
+        role: 'assistant',
+        content: '',
+        useContent: content,
+        userContentKey,
+        sort: (historyList[historyList.length - 1]?.sort || 0) + 1,
+        chatKey: chatKey,
+      });
+    } else {
+      const oldAssContent = await getStoreData<DSContent>(contentStore, assContentKey);
+      oldAssContent.content = '';
+      oldAssContent.reason = '';
+      await updateData(contentStore, oldAssContent, assContentKey);
+    }
+    if (assContentKey && oldUserContentKey) {
+      historyContent.pop();
+      historyContent.pop();
+      historyContent.push({
+        role: 'user',
+        content,
+      });
+    } else if (assContentKey) {
       if (historyList[historyList.length - 1]?.key === assContentKey) {
         historyContent.pop();
       }
@@ -389,24 +427,7 @@ class DSDbTool {
         content,
       });
     }
-    const chat = await getStoreData<DSChat>(chatStore, chatKey);
-    let contentKey = assContentKey;
-    if (!assContentKey || historyList[historyList.length - 1]?.key !== assContentKey) {
-      const userContentKey = await addData<number, Omit<DSContent, 'key'>>(contenStore, {
-        role: 'user',
-        content,
-        sort: (historyList[historyList.length - 1]?.sort || 0) + 1,
-        chatKey: chatKey || 0,
-      });
-      contentKey = await addData<number, Omit<DSContent, 'key'>>(contenStore, {
-        role: 'assistant',
-        content: '',
-        useContent: content,
-        userContentKey,
-        sort: (historyList[historyList.length - 1]?.sort || 0) + 1,
-        chatKey: chatKey,
-      });
-    }
+
     chat.lastMsg = content;
     await updateData(chatStore, chat, chatKey);
 

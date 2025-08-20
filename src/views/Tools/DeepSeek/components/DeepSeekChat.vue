@@ -10,6 +10,7 @@
           handler: (e: Touch) => {
             showMenu(chatRecord, e);
           },
+          triggerTime: 1000,
         }"
         @contextmenu.prevent="showMenu(chatRecord, $event)"
       >
@@ -20,7 +21,6 @@
             (chatRecord.reason || (chatRecord.key === streamKey && streamReason))
           "
         >
-          <!-- {{ chatRecord.key === streamKey ? streamReason : chatRecord.reason }} -->
           <MjMd
             :content="chatRecord.key === streamKey ? streamReason : chatRecord.reason || ''"
             :disabledTypes="['a']"
@@ -52,7 +52,15 @@
       >
         修改
       </dl>
-      <dl v-if="menuContent?.role === 'assistant'" @click.stop="reCreate">重新生成</dl>
+      <dl
+        v-if="
+          menuContent?.role === 'assistant' &&
+          contentList[contentList.length - 1].key === menuContent.key
+        "
+        @click.stop="reCreate"
+      >
+        重新生成
+      </dl>
       <dl v-if="menuContent?.role === 'user'" style="color: red" @click.stop="delContent">删除</dl>
     </div>
   </div>
@@ -68,7 +76,7 @@ import message from '@/components/MjMessage';
 const contentScroll = ref<HTMLDivElement>();
 const emits = defineEmits<{
   (e: 'reCreate', content: DSContent, historyList: DSMessageItem[]): void;
-  (e: 'modifyContent', content: DSContent): void;
+  (e: 'modifyContent', content: DSContent, assContent: DSContent): void;
 }>();
 const props = defineProps<{
   group: DSGroup;
@@ -134,9 +142,11 @@ const reCreate = () => {
 };
 const modifyContent = async () => {
   if (menuContent.value) {
-    const assContent = (await dbtool.getContentByUserContentKey(menuContent.value.key))?.data;
-    if (assContent) {
-      emits('modifyContent', assContent);
+    if (contentList.value[contentList.value.length - 1]) {
+      emits('modifyContent', menuContent.value, contentList.value[contentList.value.length - 1]);
+      nextTick(() => {
+        menuContent.value = null;
+      });
     }
   }
 };

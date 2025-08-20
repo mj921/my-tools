@@ -14,7 +14,7 @@ export const AiMaxToken = {
 };
 
 export type AiType = keyof typeof AiApiUrl;
-export const deepseekModelList = ['deepseek-reasoner'];
+export const deepseekModelList = ['deepseek-reasoner', 'deepseek-chat'];
 
 export const nebulablockModelList = [
   'deepseek-ai/DeepSeek-R1',
