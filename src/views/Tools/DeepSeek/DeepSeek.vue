@@ -127,6 +127,7 @@ const answer = reactive({
   content: '',
   reasoning: '',
   key: 0,
+  firstChatKey: 0,
 });
 
 const fetchDeepseek = (historyContent: DSMessageItem[]) => {
@@ -152,11 +153,13 @@ const fetchDeepseek = (historyContent: DSMessageItem[]) => {
         const decoder = new TextDecoder();
         answer.content = '';
         answer.reasoning = '';
-
         // 递归读取流数据
         const readChunk = async () => {
           const { value, done } = await reader!.read();
           if (done) {
+            if (config[AiAppid.nebulablock] && answer.firstChatKey) {
+              getTitle(answer.content);
+            }
             dbtool.updateChat(selectChat.value!.key, { lastMsg: answer.content });
             dbtool
               .updateContent(answer.key, {
@@ -235,6 +238,40 @@ const modifyContent = async (userContent: DSContent, assContent: DSContent) => {
     modifyContentItem.value = { userContent, assContent };
   }
 };
+const getTitle = (content: string) => {
+  fetch(`${AiApiUrl.nebulablock}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${config[AiAppid.nebulablock]}`,
+      mode: 'no-cors',
+    },
+    body: JSON.stringify({
+      messages: [
+        {
+          role: 'user',
+          content: `精简提炼以下对话的标题，直接输出提炼后的标题，不要输出其他文字\n${content}`,
+        },
+      ],
+      model: 'deepseek-ai/DeepSeek-V3-0324',
+      max_tokens: AiMaxToken.nebulablock,
+      stream: false,
+    }),
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      dbtool
+        .updateChat(answer.firstChatKey, { name: res?.choices?.[0]?.message?.content || '' })
+        .then(() => {
+          if (selectChat.value) {
+            selectChat.value.name = res?.choices?.[0]?.message?.content || '';
+          }
+        });
+    })
+    .finally(() => {
+      answer.firstChatKey = 0;
+    });
+};
 const send = () => {
   if (sendContent.value) {
     dbtool
@@ -251,6 +288,7 @@ const send = () => {
           answer.key = res.data!.contentKey;
           fetchDeepseek(res.data!.historyContent);
           if (!route.params.chatKey) {
+            answer.firstChatKey = res.data!.chatKey;
             router.push({
               name: 'tool-deepseek',
               params: {

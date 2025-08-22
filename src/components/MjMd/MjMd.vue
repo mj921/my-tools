@@ -1,5 +1,5 @@
 <template>
-  <div class="mj-md">
+  <div class="mj-md" :data-theme="theme">
     <mj-md-dom :doms="mdDoms" />
   </div>
 </template>
@@ -10,6 +10,7 @@ import MjMdDom from './MjMdDom.vue';
 import { generateUuid } from '@/utils';
 
 const props = withDefaults(defineProps<MjMdProps>(), {
+  theme: 'light',
   disabledTypes: () => [],
 });
 
@@ -623,7 +624,11 @@ const mdDoms = computed(() => {
 </script>
 <style lang="scss">
 .mj-md {
+  --mj-md-table-thead-bg: #f8f8f8;
   padding: 20px;
+  &[data-theme='dark'] {
+    --mj-md-table-thead-bg: #333;
+  }
   *:first-child {
     margin-top: 0;
   }
@@ -718,7 +723,7 @@ const mdDoms = computed(() => {
   table {
     border-collapse: collapse;
     thead {
-      background-color: #f8f8f8;
+      background-color: var(--mj-md-table-thead-bg);
     }
     th,
     td {
@@ -728,7 +733,7 @@ const mdDoms = computed(() => {
     tbody {
       tr {
         &:nth-child(even) {
-          background-color: #f8f8f8;
+          background-color: var(--mj-md-table-thead-bg);
         }
       }
     }

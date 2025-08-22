@@ -1,5 +1,6 @@
 <template>
   <div ref="contentScroll" class="ds-chat">
+    <div v-if="chat.name" class="chat-title">{{ chat.name }}</div>
     <div class="chat-content-list">
       <div
         :class="['chat-content-item', `chat-content-item--${chatRecord.role}`]"
@@ -24,6 +25,7 @@
           <MjMd
             :content="chatRecord.key === streamKey ? streamReason : chatRecord.reason || ''"
             :disabledTypes="['a']"
+            theme="dark"
           />
         </div>
         <div class="chat-content-content">
@@ -32,6 +34,7 @@
             v-else
             :content="chatRecord.key === streamKey ? streamContent : chatRecord.content || ''"
             :disabledTypes="['a']"
+            theme="dark"
           />
         </div>
       </div>
@@ -178,6 +181,7 @@ onBeforeUnmount(() => {
   flex: 1 1 calc(100% - 100px);
   overflow: auto;
   margin-bottom: 16px;
+  position: relative;
   h1 {
     padding-top: 20%;
     margin-bottom: 16px;
@@ -198,6 +202,14 @@ onBeforeUnmount(() => {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+  }
+  .chat-title {
+    line-height: 32px;
+    font-size: 18px;
+    position: sticky;
+    top: 0;
+    background-color: var(--deepseek-bg);
+    z-index: 9;
   }
   .chat-content-list {
     margin-top: 24px;

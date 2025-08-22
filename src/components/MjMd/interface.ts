@@ -1,5 +1,6 @@
 export interface MjMdProps {
   content: string;
+  theme?: 'light' | 'dark';
   disabledTypes?: string[];
 }
 
