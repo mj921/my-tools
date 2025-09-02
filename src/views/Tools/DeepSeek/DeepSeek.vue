@@ -130,7 +130,7 @@ const answer = reactive({
   firstChatKey: 0,
 });
 
-const fetchDeepseek = (historyContent: DSMessageItem[]) => {
+const fetchDeepseek = (historyContent: DSMessageItem[], retry = 3) => {
   const aiType = (config.aiType || 'deepseek') as AiType;
   let prev = '';
   fetch(`${AiApiUrl[aiType]}/chat/completions`, {
@@ -145,6 +145,8 @@ const fetchDeepseek = (historyContent: DSMessageItem[]) => {
       model: selectedModal.value,
       max_tokens: +config.maxToken || AiMaxToken[aiType],
       stream: true,
+      temperature: 0.7,
+      top_p: 0.9,
     }),
   })
     .then((res) => {
@@ -210,6 +212,12 @@ const fetchDeepseek = (historyContent: DSMessageItem[]) => {
         };
 
         readChunk();
+      } else {
+        if (res.status === 429 && retry > 0) {
+          setTimeout(() => {
+            fetchDeepseek(historyContent, retry - 1);
+          }, 1000);
+        }
       }
     })
     .catch((err) => {
