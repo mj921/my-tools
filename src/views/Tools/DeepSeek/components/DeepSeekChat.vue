@@ -29,7 +29,10 @@
           />
         </div>
         <div class="chat-content-content">
-          <template v-if="chatRecord.role === 'user'">{{ chatRecord.content }}</template>
+          <div
+            v-if="chatRecord.role === 'user'"
+            v-html="chatRecord.content.replace('\n', '<br />')"
+          ></div>
           <MjMd
             v-else
             :content="chatRecord.key === streamKey ? streamContent : chatRecord.content || ''"

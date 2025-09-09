@@ -13,6 +13,7 @@
         >
           <option value="deepseek">deepseek</option>
           <option value="nebulablock">nebulablock</option>
+          <option value="edgefn">edgefn</option>
         </select>
       </dl>
       <dl class="ds-setting-row" v-if="config.aiType === 'nebulablock'">
@@ -22,6 +23,16 @@
           id="ds-api"
           placeholder="请输入appid"
           v-model="config.nebulablockAppid"
+          autocomplete="off"
+        />
+      </dl>
+      <dl class="ds-setting-row" v-else-if="config.aiType === 'edgefn'">
+        <label class="ds-setting-label" for="ds-api">appid</label>
+        <input
+          class="ds-setting-ipt"
+          id="ds-api"
+          placeholder="请输入appid"
+          v-model="config.edgefnAppid"
           autocomplete="off"
         />
       </dl>
