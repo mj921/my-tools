@@ -8,7 +8,7 @@
     >
       <div class="deepseek-sider" @click.stop>
         <div class="deepseek-list">
-          <DeepSeekGroup />
+          <DSGroupChatList />
         </div>
         <div class="deepseek-sider-btns">
           <dl class="deepseek-sider-btn" @click="settingVisible = true">设置</dl>
@@ -17,7 +17,7 @@
     </div>
     <div class="deepseek-sider" v-else>
       <div class="deepseek-list">
-        <DeepSeekGroup />
+        <DSGroupChatList />
       </div>
       <div class="deepseek-sider-btns">
         <dl class="deepseek-sider-btn" @click="settingVisible = true">设置</dl>
@@ -25,24 +25,20 @@
     </div>
     <div class="deepseek-container">
       <MenuIcon color="#fff" v-if="isMobile" @click="silderVisible = true" />
-      <template v-if="route.params.chatKey">
-        <DeepSeekChat
-          v-if="selectChat && selectGroup"
-          :chat="selectChat"
-          :group="selectGroup"
-          :streamContent="answer.content"
-          :streamReason="answer.reasoning"
-          :stream-key="answer.key"
-          @re-create="reCreate"
-          @modify-content="modifyContent"
-        />
-      </template>
-      <template v-else-if="route.params.groupKey">
-        <DeepSeekGroupDetail v-if="selectGroup" :group="selectGroup" @group-update="groupUpdate" />
-      </template>
+      <DSGroupChatDetail
+        v-if="route.params.chatKey && selectChat"
+        :chat="selectChat"
+        :streamContent="answer.content"
+        :streamReason="answer.reasoning"
+        :stream-key="answer.key"
+        @re-create="reCreate"
+        @modify-content="modifyContent"
+        @chat-update="groupUpdate"
+        @refresh-groupchat="refreshGroupChat"
+      />
 
       <div
-        v-if="route.params.groupKey"
+        v-if="route.params.chatKey"
         :style="{ zIndex: modifyContentItem.userContent ? 99999999 : 0 }"
         @click.stop
       >
@@ -57,7 +53,7 @@
           <MjSelect
             v-model="selectedModal"
             :options="
-              modelList.map((el) => ({
+              AiModelList[(config.aiType || 'deepseek') as AiType].map((el) => ({
                 label: el,
                 value: el,
               }))
@@ -82,53 +78,36 @@
 </template>
 <script lang="ts" setup>
 import { provide, reactive, ref, watch } from 'vue';
-import DSDbTool, { type DSChat, type DSContent, type DSGroup, type DSMessageItem } from './db';
+import DSDbTool, { type DSContent, type DSGroupChat, type DSMessageItem } from './db';
 import DeepSeekSetting from './components/DeepSeekSetting.vue';
-import DeepSeekGroup from './components/DeepSeekGroup.vue';
 import { useRoute, useRouter } from 'vue-router';
-import DeepSeekGroupDetail from './components/DeepSeekGroupDetail.vue';
-import DeepSeekChat from './components/DeepSeekChat.vue';
 import MjTextarea from '@/components/MjTextarea/MjTextarea.vue';
 import MenuIcon from '@/components/MjIcon/MenuIcon.vue';
-import { AiApiUrl, AiAppid, AiMaxToken, AiModelDef, type AiType } from './aiConfig';
+import { AiApiUrl, AiAppid, AiMaxToken, AiModelList, type AiType } from './aiConfig';
 import MjSelect from '@/components/MjSelect/MjSelect.vue';
+import DSGroupChatList from './components/DSGroupChatList.vue';
+import DSGroupChatDetail from './components/DSGroupChatDetail.vue';
 
 const route = useRoute();
 const router = useRouter();
 const dbtool = new DSDbTool();
-const selectGroup = ref<DSGroup | null>(null);
-const selectChat = ref<DSChat | null>(null);
+const selectChat = ref<DSGroupChat | null>(null);
 const settingVisible = ref(false);
 const sendContent = ref('');
 const isMobile = ref(window.innerWidth <= 750);
 const silderVisible = ref(false);
 const selectedModal = ref('');
-const modelList = ref([]);
 provide('ds', {
   dbtool,
 });
-const groupUpdate = (group: DSGroup) => {
-  selectGroup.value = group;
+const groupUpdate = (group: DSGroupChat) => {
+  selectChat.value = group;
 };
 
 const config = reactive<Record<string, string>>({});
 dbtool.getConfig().then((res = []) => {
   res.forEach((el) => (config[el.name] = el.value));
-  const aiType = (config.aiType || 'deepseek') as AiType;
-  fetch(`${AiApiUrl[aiType]}/models`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config[AiAppid[aiType]]}`,
-      mode: 'no-cors',
-    },
-  })
-    .then((res) => res.json())
-    .then((res) => {
-      modelList.value = (res?.data || []).map((el: { id: string }) => el.id);
-      selectedModal.value = AiModelDef[aiType] || modelList.value[0];
-    });
-  // selectedModal.value = AiModelList[(config.aiType || 'deepseek') as AiType][0];
+  selectedModal.value = AiModelList[(config.aiType || 'deepseek') as AiType][0];
 });
 watch([settingVisible], () => {
   if (!settingVisible.value) {
@@ -143,8 +122,12 @@ const answer = reactive({
   reasoning: '',
   key: 0,
   firstChatKey: 0,
+  name: '',
 });
 
+const replyList = ref<string[]>([]);
+const replayNum = ref<Record<string, number>>({});
+const prevContent = reactive({ name: '', content: '' });
 const fetchDeepseek = (historyContent: DSMessageItem[], retry = 3) => {
   const aiType = (config.aiType || 'deepseek') as AiType;
   let prev = '';
@@ -174,21 +157,25 @@ const fetchDeepseek = (historyContent: DSMessageItem[], retry = 3) => {
         const readChunk = async () => {
           const { value, done } = await reader!.read();
           if (done) {
-            if (config[AiAppid.nebulablock] && answer.firstChatKey) {
-              getTitle(answer.content);
-            }
-            dbtool.updateChat(selectChat.value!.key, { lastMsg: answer.content });
             dbtool
-              .updateContent(answer.key, {
+              .updateGroupContent(answer.key, {
                 content: answer.content,
                 reason: answer.reasoning,
                 isStream: false,
               })
               .then((res) => {
                 if (res.success) {
+                  replayNum.value[answer.name] = (replayNum.value[answer.name] || 0) + 1;
+                  const total = Object.values(replayNum.value).reduce((sum, el) => sum + el, 0);
+                  prevContent.content = answer.content;
                   answer.key = 0;
                   answer.content = '';
                   answer.reasoning = '';
+                  if (replyList.value.length > 0 || Math.random() < 0.618 ** total) {
+                    send();
+                  } else {
+                    prevContent.content = '';
+                  }
                 }
               });
             return;
@@ -196,7 +183,6 @@ const fetchDeepseek = (historyContent: DSMessageItem[], retry = 3) => {
 
           // 处理数据块
           const chunk = prev + decoder.decode(value, { stream: true });
-          console.log(prev);
 
           prev = '';
           const lines = chunk.split('\n').filter((line) => line.trim());
@@ -204,7 +190,6 @@ const fetchDeepseek = (historyContent: DSMessageItem[], retry = 3) => {
           for (const line of lines) {
             if (line.startsWith('data:')) {
               const eventData = line.replace('data:', '').trim();
-              console.log(eventData);
 
               if (eventData === '[DONE]') continue;
 
@@ -264,68 +249,87 @@ const modifyContent = async (userContent: DSContent, assContent: DSContent) => {
     modifyContentItem.value = { userContent, assContent };
   }
 };
-const getTitle = (content: string) => {
-  fetch(`${AiApiUrl.nebulablock}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config[AiAppid.nebulablock]}`,
-      mode: 'no-cors',
-    },
-    body: JSON.stringify({
-      messages: [
-        {
-          role: 'user',
-          content: `精简提炼以下对话的标题，直接输出提炼后的标题，不要输出其他文字\n${content}`,
-        },
-      ],
-      model: 'deepseek-ai/DeepSeek-V3-0324',
-      max_tokens: AiMaxToken.nebulablock,
-      stream: false,
-    }),
-  })
-    .then((res) => res.json())
-    .then((res) => {
-      dbtool
-        .updateChat(answer.firstChatKey, { name: res?.choices?.[0]?.message?.content || '' })
-        .then(() => {
-          if (selectChat.value) {
-            selectChat.value.name = res?.choices?.[0]?.message?.content || '';
-          }
-        });
-    })
-    .finally(() => {
-      answer.firstChatKey = 0;
-    });
-};
 const send = () => {
+  const memberList = [...(selectChat.value?.memberList || [])];
   if (sendContent.value) {
+    prevContent.content = sendContent.value;
+    prevContent.name = selectChat.value?.username || '林';
+  }
+  if (prevContent.content && selectChat.value && memberList.length > 0) {
+    memberList.forEach((el) => {
+      if (prevContent.content.includes(el.name) && prevContent.name !== el.name) {
+        replyList.value.push(el.name);
+      }
+    });
+    let memberIndex = -1;
+    if (replyList.value.length > 0) {
+      memberIndex = memberList.findIndex((el) => el.name === replyList.value[0]);
+      replyList.value.shift();
+    } else {
+      const total = memberList.reduce(
+        (sum, el) =>
+          sum + (el.name === prevContent.name ? 0 : 1 / ((replayNum.value[el.name] || 0) + 1)),
+        0,
+      );
+      let r = Math.random() * total;
+
+      for (let i = 0; i < memberList.length; i++) {
+        if (memberList[i].name !== prevContent.name) {
+          const val = 1 / ((replayNum.value[memberList[i].name] || 0) + 1);
+          if (r < val) {
+            memberIndex = i;
+          } else {
+            r -= val;
+          }
+        }
+      }
+    }
+    if (memberIndex === -1) return;
+    const member = memberList[memberIndex];
+    answer.name = member.name;
+    memberList.splice(memberIndex, 1);
+    const sysMsg = (selectChat.value.sysPreset ? [selectChat.value.sysPreset] : [])
+      .concat(memberList.map((el) => `${el.name}:\n${el.sysPreset}`))
+      .concat([`我是${selectChat.value?.username || '林'}\n${selectChat.value?.userPreset || ''}`])
+      .join('\n');
     dbtool
-      .sendChatContent({
-        content: sendContent.value.replace(/(^\s+|\s+$)/g, ''),
-        groupKey: selectGroup.value!.key,
-        chatKey: selectChat.value?.key ?? undefined,
-        assContentKey: modifyContentItem.value?.assContent?.key,
-        userContentKey: modifyContentItem.value?.userContent?.key,
-      })
+      .sendGroupChatContent(
+        selectChat.value!.key,
+        member.name,
+        sendContent.value
+          ? {
+              role: 'user',
+              name: selectChat.value?.username || '林',
+              content: prevContent.content,
+            }
+          : undefined,
+      )
       .then((res) => {
         if (res.success) {
-          sendContent.value = '';
           answer.key = res.data!.contentKey;
-          fetchDeepseek(res.data!.historyContent);
-          if (!route.params.chatKey) {
-            answer.firstChatKey = res.data!.chatKey;
-            router.push({
-              name: 'tool-deepseek',
-              params: {
-                groupKey: selectGroup.value!.key,
-                chatKey: res.data!.chatKey,
-              },
+          const historyContent: DSMessageItem[] = [
+            {
+              role: 'system',
+              content: sysMsg,
+            },
+          ];
+          historyContent.push(
+            ...res.data.list.map((el) => ({ role: el.role, name: el.name, content: el.content })),
+          );
+          historyContent.push({
+            role: 'system',
+            content: `你是${member.name}:\n${member.sysPreset}`,
+          });
+          if (prevContent.name === (selectChat.value?.username || '林')) {
+            historyContent.push({
+              role: 'user',
+              name: selectChat.value?.username || '林',
+              content: prevContent.content,
             });
           }
-          if (modifyContentItem.value.userContent) {
-            modifyContentItem.value = { userContent: null, assContent: null };
-          }
+          prevContent.name = member.name;
+          sendContent.value = '';
+          fetchDeepseek(historyContent);
         }
       });
   }
@@ -336,50 +340,30 @@ const sendEnter = (e: KeyboardEvent) => {
     send();
   }
 };
+const refreshGroupChat = () => {
+  if (route.params.chatKey) {
+    dbtool.getGroupChat(+route.params.chatKey).then((res) => {
+      if (!res) {
+        router.push({
+          name: 'tool-ds-groupchat',
+        });
+      }
+      selectChat.value = res;
+    });
+  } else {
+    selectChat.value = null;
+  }
+};
 watch(
-  () => route.params.groupKey,
+  () => route.params.chatKey,
   () => {
-    if (route.params.groupKey) {
-      dbtool.getGroup(+route.params.groupKey).then((res) => {
-        if (!res) {
-          router.push({
-            name: 'tool-deepseek',
-          });
-        }
-        selectGroup.value = res;
-      });
-    } else {
-      selectGroup.value = null;
-    }
+    refreshGroupChat();
   },
   {
     immediate: true,
   },
 );
 
-watch(
-  () => route.params.chatKey,
-  () => {
-    if (route.params.chatKey) {
-      dbtool.getChat(+route.params.chatKey).then((res) => {
-        if (!res) {
-          router.push({
-            name: 'tool-deepseek',
-            params: {
-              groupKey: route.params.groupKey,
-            },
-          });
-        }
-        selectChat.value = res;
-      });
-    } else {
-      selectChat.value = null;
-    }
-  },
-  {
-    immediate: true,
-  },
-);
 //
 </script>
 <style scoped lang="scss">

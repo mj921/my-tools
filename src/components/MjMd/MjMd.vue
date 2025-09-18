@@ -625,9 +625,11 @@ const mdDoms = computed(() => {
 <style lang="scss">
 .mj-md {
   --mj-md-table-thead-bg: #f8f8f8;
+  --mj-md-pre-bg: #f6f8fa;
   padding: 20px;
   &[data-theme='dark'] {
     --mj-md-table-thead-bg: #333;
+    --mj-md-pre-bg: #333;
   }
   *:first-child {
     margin-top: 0;
@@ -706,7 +708,7 @@ const mdDoms = computed(() => {
     }
   }
   pre {
-    background-color: #f6f8fa;
+    background-color: var(--mj-md-pre-bg);
     padding: 16px;
     border-radius: 3px;
     font-size: 85%;

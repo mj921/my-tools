@@ -266,6 +266,14 @@ const router = createRouter({
       component: () => import('../views/Tools/DeepSeek/DeepSeek.vue'),
     },
     {
+      path: '/tool/dsgroupchat/:chatKey?',
+      name: 'tool-ds-groupchat',
+      meta: {
+        title: 'deepseek',
+      },
+      component: () => import('../views/Tools/DeepSeek/GroupChat.vue'),
+    },
+    {
       path: '/dsp/blueprint',
       name: 'dsp-blueprint',
       meta: {

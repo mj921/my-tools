@@ -51,3 +51,9 @@ export const AiModelList = {
   nebulablock: nebulablockModelList,
   edgefn: edgefnModelList,
 };
+
+export const AiModelDef = {
+  deepseek: deepseekModelList[0],
+  nebulablock: nebulablockModelList[0],
+  edgefn: edgefnModelList[0],
+};
