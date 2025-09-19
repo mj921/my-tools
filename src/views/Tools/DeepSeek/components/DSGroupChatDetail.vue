@@ -8,7 +8,9 @@
         </div>
         <RightIcon />
       </div>
-      <div @click="memberVisible = true">{{ chat.memberList?.length || 0 }}人</div>
+      <div @click="memberVisible = true" style="flex: 0; white-space: nowrap">
+        {{ chat.memberList?.length || 0 }}人
+      </div>
     </div>
     <div class="chat-content-list">
       <div
@@ -99,7 +101,7 @@
         </div>
       </div>
     </div>
-    <div class="deepseek-mask" v-show="memberVisible">
+    <div class="deepseek-mask" v-if="memberVisible">
       <div class="ds-groupchat-sys-modal">
         <div class="ds-groupchat-sys-modal-header">群成员</div>
         <MjButton @click="addMember">添加</MjButton>
@@ -114,9 +116,9 @@
             />
           </MjTabs.Panel>
           <MjTabs.Panel
-            v-for="member in chat.memberList || []"
+            v-for="(member, i) in chat.memberList || []"
             :title="member.name"
-            :key="member.name"
+            :key="i.toString()"
           >
             <MjInput v-model="member.name" />
             <MjTextarea
@@ -448,7 +450,9 @@ onBeforeUnmount(() => {
     border-radius: 8px;
     background-color: var(--deepseek-sider-bg);
     font-size: 14px;
-    flex: 1;
+    flex: 1 0 calc(100% - 80px);
+    width: calc(100% - 80px);
+    box-sizing: border-box;
     cursor: pointer;
     .ds-groupchat-sys-text {
       width: calc(100% - 30px);

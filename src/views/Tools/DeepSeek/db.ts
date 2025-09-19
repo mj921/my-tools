@@ -129,7 +129,7 @@ export const getStoreData = <D>(
 
 class DSDbTool {
   private dbname = 'deepseek';
-  private version = 2;
+  private version = 3;
   constructor() {}
 
   open(): Promise<IDBDatabase> {
@@ -141,6 +141,7 @@ class DSDbTool {
       };
       request.onsuccess = (event) => {
         resolve((event?.target as any)?.result);
+        event.target;
       };
       request.onupgradeneeded = (event) => {
         const db: IDBDatabase = (event?.target as any)?.result;
@@ -173,7 +174,7 @@ class DSDbTool {
           }
           if (!db.objectStoreNames.contains('groupmember')) {
             const memberStore = db.createObjectStore('groupmember', { autoIncrement: true });
-            memberStore.createIndex('name', 'name', { unique: true });
+            memberStore.createIndex('name', 'name');
             memberStore.createIndex('chatKey', 'chatKey', { unique: false });
           }
           if (!db.objectStoreNames.contains('groupcontent')) {
@@ -183,6 +184,12 @@ class DSDbTool {
             contentStore.createIndex('chatKey', 'chatKey', { unique: false });
             contentStore.createIndex('userContentKey', 'userContentKey', { unique: false });
           }
+        }
+        if (oldVersion < 3) {
+          const transaction = (event.target as any).transaction;
+          const memberStore = transaction.objectStore('groupmember');
+          memberStore.deleteIndex('name');
+          memberStore.createIndex('name', 'name');
         }
       };
     });
@@ -666,6 +673,8 @@ class DSDbTool {
     username?: string;
     userPreset?: string;
   }): Promise<{ msg: string; success: boolean }> {
+    console.log(JSON.stringify(memberList));
+
     const db = await this.open();
     const transaction = db.transaction(['groupchat', 'groupmember'], 'readwrite');
     const groupChatStore = transaction.objectStore('groupchat');
@@ -717,7 +726,10 @@ class DSDbTool {
         resolve({ msg: '修改成功', success: true });
         db.close();
       };
-      transaction.onerror = reject;
+      transaction.onerror = (err) => {
+        console.log(err);
+        reject(err);
+      };
     });
   }
   async getGroupChatList() {

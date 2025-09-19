@@ -60,6 +60,7 @@
             "
           />
           <button :disabled="!sendContent" class="ds-send-btn" @click.stop="send">发送</button>
+          <button class="ds-send-btn" @click.stop="autoSend">自动聊天</button>
         </div>
       </div>
     </div>
@@ -330,6 +331,158 @@ const send = () => {
           prevContent.name = member.name;
           sendContent.value = '';
           fetchDeepseek(historyContent);
+        }
+      });
+  }
+};
+
+const fetchDeepseekAuto = (historyContent: DSMessageItem[], retry = 3) => {
+  const aiType = (config.aiType || 'deepseek') as AiType;
+  let prev = '';
+  fetch(`${AiApiUrl[aiType]}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${config[AiAppid[aiType]]}`,
+      mode: 'no-cors',
+    },
+    body: JSON.stringify({
+      messages: historyContent,
+      model: selectedModal.value,
+      max_tokens: +config.maxToken || AiMaxToken[aiType],
+      stream: true,
+      temperature: 0.7,
+      top_p: 0.9,
+    }),
+  })
+    .then((res) => {
+      if (res.ok) {
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        answer.content = '';
+        answer.reasoning = '';
+        // 递归读取流数据
+        const readChunk = async () => {
+          const { value, done } = await reader!.read();
+          if (done) {
+            dbtool
+              .updateGroupContent(answer.key, {
+                content: answer.content,
+                reason: answer.reasoning,
+                isStream: false,
+              })
+              .then((res) => {
+                if (res.success) {
+                  answer.key = 0;
+                  answer.content = '';
+                  answer.reasoning = '';
+                }
+              });
+            return;
+          }
+
+          // 处理数据块
+          const chunk = prev + decoder.decode(value, { stream: true });
+
+          prev = '';
+          const lines = chunk.split('\n').filter((line) => line.trim());
+
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              const eventData = line.replace('data:', '').trim();
+
+              if (eventData === '[DONE]') continue;
+
+              try {
+                const parsed = JSON.parse(eventData);
+                const delta = parsed.choices?.[0]?.delta;
+
+                if (delta?.content) {
+                  answer.content += delta.content;
+                }
+
+                if (delta?.reasoning_content) {
+                  answer.reasoning += delta.reasoning_content;
+                }
+              } catch (err) {
+                prev += line;
+                console.error('解析错误:', err);
+              }
+            }
+          }
+
+          readChunk(); // 继续读取下一块
+        };
+
+        readChunk();
+      } else {
+        if (res.status === 429 && retry > 0) {
+          setTimeout(() => {
+            fetchDeepseek(historyContent, retry - 1);
+          }, 1000);
+        }
+      }
+    })
+    .catch((err) => {
+      console.log(err, 'err');
+    });
+};
+const autoSend = () => {
+  const memberList = [...(selectChat.value?.memberList || [])].slice(0, 2);
+  if (selectChat.value && memberList.length > 1) {
+    let member, user;
+    if (memberList[0]?.name === prevContent.name) {
+      [user, member] = memberList;
+    } else {
+      [member, user] = memberList;
+    }
+    if (sendContent.value) {
+      [user, member] = [member, user];
+    }
+    answer.name = member.name;
+    const sysMsg = (selectChat.value.sysPreset ? [selectChat.value.sysPreset] : [])
+      .concat([
+        `角色扮演\n我是${user.name || ''}\n${user.sysPreset || ''}\n你是${member.name || ''}\n${member.sysPreset || ''}`,
+      ])
+      .join('\n');
+    dbtool
+      .sendGroupChatContent(
+        selectChat.value!.key,
+        member.name,
+        sendContent.value
+          ? {
+              role: 'user',
+              name: user.name,
+              content: sendContent.value,
+            }
+          : undefined,
+      )
+      .then((res) => {
+        if (res.success) {
+          answer.key = res.data!.contentKey;
+          const historyContent: DSMessageItem[] = [
+            {
+              role: 'system',
+              content: sysMsg,
+            },
+          ];
+          historyContent.push(
+            ...res.data.list.map((el) => ({
+              role: (el.name === member.name ? 'assistant' : 'user') as 'assistant' | 'user',
+              name: el.name,
+              content: el.content,
+            })),
+          );
+          if (sendContent.value) {
+            historyContent.push({
+              role: 'user',
+              name: user.name,
+              content: sendContent.value,
+            });
+          }
+          prevContent.name = member.name;
+          sendContent.value = '';
+          fetchDeepseekAuto(historyContent);
         }
       });
   }
