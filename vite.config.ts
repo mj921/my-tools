@@ -10,6 +10,7 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'development' ? '/' : '/my-tools/',
   server: {
     host: '0.0.0.0',
+    port: 5174,
   },
   plugins: [vue(), vueJsx(), vueDevTools()],
   resolve: {

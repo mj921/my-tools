@@ -127,6 +127,79 @@ export const getStoreData = <D>(
     res.onerror = reject;
   });
 
+/**
+ * 批量删除 IndexedDB 中指定字段值为指定值的记录
+ * @param {string} dbName - 数据库名称
+ * @param {string} storeName - 对象存储名称
+ * @param {string} indexName - 索引名称
+ * @param {any} value - 要匹配的值
+ * @returns {Promise<number>} 删除的记录数量
+ */
+const bulkDeleteByIndexValue = (objectStore: IDBObjectStore, indexName: string, value: any) => {
+  new Promise((resolve, reject) => {
+    // 检查索引是否存在
+    if (!objectStore.indexNames.contains(indexName)) {
+      reject(new Error(`索引 ${indexName} 不存在`));
+    }
+
+    const index = objectStore.index(indexName);
+    const keyRange = IDBKeyRange.only(value);
+    const getAllKeysRequest = index.getAllKeys(keyRange);
+
+    getAllKeysRequest.onsuccess = function (event) {
+      const keys: IDBValidKey[] = (event.target as any).result;
+
+      if (keys.length === 0) {
+        resolve(0);
+        return 0;
+      }
+
+      let completed = 0;
+      const errors: string[] = [];
+
+      // 批量删除
+      keys.forEach((key) => {
+        const deleteRequest = objectStore.delete(key);
+
+        deleteRequest.onsuccess = function () {
+          completed++;
+
+          if (completed === keys.length) {
+            if (errors.length > 0) {
+              reject(new Error(`部分删除失败: ${errors.join(', ')}`));
+            } else {
+              console.log(`成功删除 ${completed} 条记录`);
+              resolve(completed);
+              return;
+            }
+          }
+        };
+
+        deleteRequest.onerror = function () {
+          if (deleteRequest.error) {
+            errors.push(deleteRequest.error.toString());
+          }
+          completed++;
+
+          if (completed === keys.length) {
+            if (errors.length > 0) {
+              reject(new Error(`部分删除失败: ${errors.join(', ')}`));
+            } else {
+              console.log(`成功删除 ${completed} 条记录`);
+              resolve(completed);
+              return;
+            }
+          }
+        };
+      });
+    };
+
+    getAllKeysRequest.onerror = function (event) {
+      reject((event.target as any).error);
+    };
+  });
+};
+
 class DSDbTool {
   private dbname = 'deepseek';
   private version = 3;
@@ -829,6 +902,25 @@ class DSDbTool {
           msg: '成功',
           success: true,
           data: { list, contentKey },
+        });
+        db.close();
+      };
+      transaction.onerror = reject;
+    });
+  }
+
+  async clearGroupChatContent(chatKey: number) {
+    const db = await this.open();
+    const transaction = db.transaction(['groupcontent'], 'readwrite');
+    const contentStore = transaction.objectStore('groupcontent');
+    await bulkDeleteByIndexValue(contentStore, 'chatKey', chatKey);
+
+    return await new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        resolve({
+          msg: '成功',
+          success: true,
+          data: true,
         });
         db.close();
       };

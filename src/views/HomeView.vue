@@ -11,6 +11,7 @@ import ETS2Icon from '@/components/MjIcon/ETS2Icon.vue';
 import ChineseIcon from '@/components/MjIcon/ChineseIcon.vue';
 import ColorIcon from '@/components/MjIcon/ColorIcon.vue';
 import TextToImageIcon from '@/components/MjIcon/TextToImageIcon.vue';
+import { ref } from 'vue';
 
 const router = useRouter();
 const navs = [
@@ -88,11 +89,18 @@ const navs = [
 const jumpLink = (item: { link: string; name: string }) => {
   router.push(item.link);
 };
+const quickJumpRoute = ref('');
+const jump = () => {
+  router.push(quickJumpRoute.value);
+};
 </script>
 
 <template>
   <main class="home">
     <div class="home-box">
+      <div class="quick-jump">
+        <input v-model="quickJumpRoute" @keypress.enter="jump" placeholder="快速跳转" />
+      </div>
       <div class="nav-box" v-for="nav in navs" :key="nav.title">
         <dt class="nav-title" :id="nav.title">
           <span>{{ nav.title }}</span>
@@ -116,11 +124,23 @@ const jumpLink = (item: { link: string; name: string }) => {
 .home {
   background-color: #0f172a;
   min-height: 100vh;
-  padding: 80px 0;
+  padding: 44px 0 80px;
   min-width: 960px;
   .home-box {
     width: 960px;
     margin: 0 auto;
+    .quick-jump {
+      text-align: right;
+      input {
+        height: 36px;
+        border: 1px solid #ccc;
+        background-color: #222;
+        color: #ddd;
+        outline: none;
+        padding: 0 8px;
+        border-radius: 4px;
+      }
+    }
     .nav-box {
       &:not(:last-child) {
         margin-bottom: 48px;

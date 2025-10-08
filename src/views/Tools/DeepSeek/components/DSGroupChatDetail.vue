@@ -296,7 +296,9 @@ const saveMember = () => {
     });
   }
 };
-
+defineExpose({
+  getContentList,
+});
 onMounted(() => {
   window.addEventListener('click', outerclick);
 });

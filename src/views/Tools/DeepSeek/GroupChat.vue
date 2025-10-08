@@ -27,6 +27,7 @@
       <MenuIcon color="#fff" v-if="isMobile" @click="silderVisible = true" />
       <DSGroupChatDetail
         v-if="route.params.chatKey && selectChat"
+        ref="detailRef"
         :chat="selectChat"
         :streamContent="answer.content"
         :streamReason="answer.reasoning"
@@ -61,6 +62,7 @@
           />
           <button :disabled="!sendContent" class="ds-send-btn" @click.stop="send">发送</button>
           <button class="ds-send-btn" @click.stop="autoSend">自动聊天</button>
+          <button class="ds-send-btn" @click.stop="clearContent">清空</button>
         </div>
       </div>
     </div>
@@ -98,6 +100,7 @@ const sendContent = ref('');
 const isMobile = ref(window.innerWidth <= 750);
 const silderVisible = ref(false);
 const selectedModal = ref('');
+const detailRef = ref();
 provide('ds', {
   dbtool,
 });
@@ -487,6 +490,11 @@ const autoSend = () => {
       });
   }
 };
+const clearContent = () => {
+  dbtool.clearGroupChatContent(selectChat.value!.key).then(() => {
+    detailRef.value.getContentList();
+  });
+};
 const sendEnter = (e: KeyboardEvent) => {
   if (!e.shiftKey) {
     e.preventDefault();
@@ -623,6 +631,13 @@ watch(
       left: 16px;
       top: 16px;
       font-size: 24px;
+    }
+    .deepseek-container {
+      .ds-send-btns {
+        .ds-send-btn {
+          padding: 8px;
+        }
+      }
     }
   }
 }

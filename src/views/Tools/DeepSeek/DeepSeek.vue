@@ -265,11 +265,11 @@ const modifyContent = async (userContent: DSContent, assContent: DSContent) => {
   }
 };
 const getTitle = (content: string) => {
-  fetch(`${AiApiUrl.nebulablock}/chat/completions`, {
+  fetch(`${AiApiUrl.edgefn}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${config[AiAppid.nebulablock]}`,
+      Authorization: `Bearer ${config[AiAppid.edgefn]}`,
       mode: 'no-cors',
     },
     body: JSON.stringify({
@@ -279,7 +279,7 @@ const getTitle = (content: string) => {
           content: `精简提炼以下对话的标题，直接输出提炼后的标题，不要输出其他文字\n${content}`,
         },
       ],
-      model: 'deepseek-ai/DeepSeek-V3-0324',
+      model: 'DeepSeek-R1-0528-Qwen3-8B',
       max_tokens: AiMaxToken.nebulablock,
       stream: false,
     }),
