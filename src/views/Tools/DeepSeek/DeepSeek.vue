@@ -387,6 +387,7 @@ watch(
   display: flex;
   height: 100vh;
   width: 100vw;
+  user-select: none;
   --deepseek-sider-bg: #252525;
   --deepseek-bg: #000;
   --deepseek-font-color: rgba(255, 255, 255, 0.9);

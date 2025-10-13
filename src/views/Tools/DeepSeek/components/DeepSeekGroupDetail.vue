@@ -1,11 +1,14 @@
 <template>
   <div class="ds-group-detail">
     <h1>{{ group.name }}</h1>
-    <div class="group-detail-sys">
-      <div class="group-detail-sys-text" @click="updataSys">
-        {{ group.sysPreset || '添加指令' }}
+    <div class="ds-group-detail-info">
+      <div class="group-detail-sys">
+        <div class="group-detail-sys-text" @click="updataSys">
+          {{ group.sysPreset || '添加指令' }}
+        </div>
+        <RightIcon />
       </div>
-      <RightIcon />
+      <div @click="importChat">粘贴</div>
     </div>
     <div class="group-chat-list">
       <div
@@ -45,6 +48,7 @@
       v-show="menuChat"
       :style="{ left: `${menuPosition.x}px`, top: `${menuPosition.y}px` }"
     >
+      <dl @click.stop="copyChat">复制</dl>
       <dl style="color: red" @click.stop="delChat">删除</dl>
     </div>
   </div>
@@ -105,6 +109,47 @@ const delChat = () => {
       });
   }
 };
+const copyChat = () => {
+  dbtool.getContentListByGhatKey(menuChat.value!.key).then((res) => {
+    if (res.success) {
+      navigator.clipboard
+        .writeText(
+          'deepseekcopy' +
+            JSON.stringify(
+              (res.data || []).map(
+                (el) => `${el.role}:${(el.content || '').replace(/(^[\n\s]+|[\n\s]+$)/g, '')}`,
+              ),
+            ),
+        )
+        .then(() => {
+          message.success('复制成功');
+        });
+    }
+  });
+};
+const importChat = () => {
+  navigator.clipboard.readText().then((res) => {
+    if (typeof res === 'string' && /^deepseekcopy/.test(res)) {
+      try {
+        const data = JSON.parse(res.slice(12));
+        const list = data.map((el: string) => {
+          const [role, content] = el.match(/(^[^:]+|(?<=:)[\w\W]+$)/g) || [];
+          return { role, content };
+        });
+        if (list.length > 0) {
+          dbtool.importContentList({ contentList: list, groupKey: group.value.key }).then(() => {
+            getChatList();
+            message.success('粘贴成功');
+          });
+        }
+      } catch (error) {
+        message.error('粘贴失败');
+      }
+    } else {
+      message.error('粘贴失败');
+    }
+  });
+};
 watch(
   () => group.value.key,
   () => {
@@ -152,6 +197,12 @@ onBeforeUnmount(() => {
     padding-top: 20%;
     margin-bottom: 16px;
   }
+
+  .ds-group-detail-info {
+    display: flex;
+    gap: 0 16px;
+    align-items: center;
+  }
   .group-detail-sys {
     display: flex;
     justify-content: space-between;
@@ -161,6 +212,7 @@ onBeforeUnmount(() => {
     border-radius: 8px;
     background-color: var(--deepseek-sider-bg);
     font-size: 14px;
+    width: calc(100% - 48px);
     cursor: pointer;
     .group-detail-sys-text {
       width: calc(100% - 30px);

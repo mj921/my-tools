@@ -581,6 +581,57 @@ class DSDbTool {
     });
   }
 
+  async importContentList({
+    contentList,
+    groupKey,
+  }: {
+    contentList: { role: string; content: string }[];
+    groupKey: number;
+  }): Promise<{
+    msg: string;
+    success: boolean;
+    data: { chatKey: number } | null;
+  }> {
+    const db = await this.open();
+    const transaction = db.transaction(['chat', 'content'], 'readwrite');
+    const chatStore = transaction.objectStore('chat');
+    const contentStore = transaction.objectStore('content');
+
+    const chatKey = await addData<number, Omit<DSChat, 'key'>>(chatStore, {
+      name: '',
+      groupKey,
+      lastMsg: contentList[contentList.length - 1].content,
+    });
+    let useContentKey = -1;
+    let i = 0;
+    while (i < contentList.length) {
+      const { role, content } = contentList[i] as { role: 'user' | 'assistant'; content: string };
+      const contentKey = await addData<number, Omit<DSContent, 'key'>>(contentStore, {
+        role,
+        content,
+        chatKey: chatKey,
+        userContentKey: role === 'assistant' ? useContentKey : undefined,
+        sort: i + 1,
+      });
+      if (role === 'user') {
+        useContentKey = contentKey;
+      }
+      i++;
+    }
+
+    return await new Promise((resolve, reject) => {
+      transaction.oncomplete = () => {
+        resolve({
+          msg: '成功',
+          success: true,
+          data: { chatKey },
+        });
+        db.close();
+      };
+      transaction.onerror = reject;
+    });
+  }
+
   async getContentListByGhatKey(chatKey: number): Promise<DSResponse<DSContent[]>> {
     const db = await this.open();
     const transaction = db.transaction(['content'], 'readonly');
