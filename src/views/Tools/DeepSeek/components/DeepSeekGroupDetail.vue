@@ -49,6 +49,7 @@
       :style="{ left: `${menuPosition.x}px`, top: `${menuPosition.y}px` }"
     >
       <dl @click.stop="copyChat">复制</dl>
+      <dl @click.stop="copyChatTextarea">手动复制</dl>
       <dl style="color: red" @click.stop="delChat">删除</dl>
     </div>
   </div>
@@ -123,9 +124,15 @@ const copyChat = () => {
         )
         .then(() => {
           message.success('复制成功');
+        })
+        .catch((err) => {
+          message.error(err?.message || '复制失败');
         });
     }
   });
+};
+const copyChatTextarea = () => {
+  router.push(`/tool/deepseek-copy/${menuChat.value!.key}`);
 };
 const importChat = () => {
   navigator.clipboard.readText().then((res) => {
