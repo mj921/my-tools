@@ -340,6 +340,38 @@ const router = createRouter({
       },
       component: () => import('../views/Tools/AlarmClock/AlarmClock.vue'),
     },
+    {
+      path: '/svg/group',
+      name: 'svg-group',
+      meta: {
+        title: 'svg',
+      },
+      component: () => import('../views/SVGGroup/SVGGroup.vue'),
+    },
+    {
+      path: '/caiyan',
+      name: 'caiyan',
+      meta: {
+        title: '猜盐',
+      },
+      component: () => import('../views/CaiYan/CaiYan.vue'),
+    },
+    {
+      path: '/caiyan/baike',
+      name: 'caiyan-baike',
+      meta: {
+        title: '猜盐-百科',
+      },
+      component: () => import('../views/CaiYan/BaiKe.vue'),
+    },
+    {
+      path: '/caiyan/geci',
+      name: 'caiyan-geci',
+      meta: {
+        title: '猜盐-歌词',
+      },
+      component: () => import('../views/CaiYan/Geci.vue'),
+    },
   ],
 });
 

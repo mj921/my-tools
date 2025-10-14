@@ -8,8 +8,8 @@ export interface RequestOptions {
   fail?: (err?: any) => void;
 }
 
-const request = (options: RequestOptions) => {
-  return new Promise((resolve, reject) => {
+const request = <T>(options: RequestOptions) => {
+  return new Promise<T>((resolve, reject) => {
     let url = options.url;
     const method = options.method || 'get';
     const data = options.data;
@@ -39,7 +39,7 @@ const request = (options: RequestOptions) => {
         }
         if (xhr.status >= 200 && xhr.status < 300) {
           success(res);
-          resolve(res);
+          resolve(res as T);
         } else {
           console.log(xhr);
           const error = new Error('Request failed. Returned status of ' + xhr.status);

@@ -1,19 +1,10 @@
-export const addZero = (val: number | string, num = 2) =>
+export const addZero = (val, num = 2) =>
   val.toString().length >= num
     ? val.toString()
     : (new Array(num).fill('0').join('') + val).slice(-num);
 
 class Day {
-  $d: Date;
-  constructor(
-    date?: string | Date | number | number[] | Day,
-    monthIndex?: number,
-    day?: number,
-    hours?: number,
-    minutes?: number,
-    seconds?: number,
-    milliseconds?: number,
-  ) {
+  constructor(date, monthIndex, day, hours, minutes, seconds, milliseconds) {
     let _date = new Date();
     if (typeof date === 'string') {
       _date = new Date(date);
@@ -57,42 +48,42 @@ class Day {
     return this.$d.getMilliseconds();
   }
 
-  millisecond(val?: number) {
+  millisecond(val) {
     if (typeof val === 'number') {
       this.$d.setMilliseconds(val);
       return this.$d.getTime();
     }
     return this.$d.getMilliseconds();
   }
-  second(val?: number) {
+  second(val) {
     if (typeof val === 'number') {
       this.$d.setSeconds(val);
       return this.$d.getTime();
     }
     return this.$d.getSeconds();
   }
-  minute(val?: number) {
+  minute(val) {
     if (typeof val === 'number') {
       this.$d.setMinutes(val);
       return this.$d.getTime();
     }
     return this.$d.getMinutes();
   }
-  hour(val?: number) {
+  hour(val) {
     if (typeof val === 'number') {
       this.$d.setHours(val);
       return this.$d.getTime();
     }
     return this.$d.getHours();
   }
-  date(val?: number) {
+  date(val) {
     if (typeof val === 'number') {
       this.$d.setDate(val);
       return this.$d.getTime();
     }
     return this.$d.getDate();
   }
-  day(val?: number) {
+  day(val) {
     const day = this.$d.getDay();
     if (typeof val === 'number') {
       const d = val - day;
@@ -101,7 +92,7 @@ class Day {
     }
     return day;
   }
-  month(val?: number, dateCarry = false) {
+  month(val, dateCarry = false) {
     if (typeof val === 'number') {
       if (dateCarry) {
         this.$d.setMonth(val);
@@ -117,7 +108,7 @@ class Day {
     }
     return this.$d.getMonth();
   }
-  year(val?: number, dateCarry = false) {
+  year(val, dateCarry = false) {
     if (typeof val === 'number') {
       if (!dateCarry && this.$M === 1 && this.$D >= 29 && !Day.isLeapYear(val)) {
         this.$d.setDate(28);
@@ -128,12 +119,11 @@ class Day {
     return this.$d.getFullYear();
   }
 
-  /** 是否是闰年 */
   isLeapYear() {
     return Day.isLeapYear(this.$Y);
   }
 
-  add(val: number, unit: string) {
+  add(val, unit) {
     switch (unit) {
       case 'millisecond':
       case 'ms':
@@ -167,7 +157,7 @@ class Day {
         return this;
     }
   }
-  subtract(val: number, unit: string) {
+  subtract(val, unit) {
     return this.add(-val, unit);
   }
 
@@ -175,7 +165,7 @@ class Day {
     return new Day(this);
   }
 
-  startOf(unit: string) {
+  startOf(unit) {
     const d = this.clone();
     switch (unit) {
       case 'second':
@@ -222,7 +212,7 @@ class Day {
     }
   }
 
-  endOf(unit: string) {
+  endOf(unit) {
     const d = this.clone();
     switch (unit) {
       case 'second':
@@ -261,7 +251,8 @@ class Day {
         d.second(59);
         d.minute(59);
         d.hour(23);
-        d.date(30);
+        d.month(11);
+        d.date(31);
         return d;
       default:
         return d;
@@ -273,7 +264,7 @@ class Day {
   }
 
   format(format = 'YYYY-MM-DD HH:mm:ss') {
-    const map: any = {
+    const map = {
       BBBB: this.$Y + 543,
       BB: (this.$Y + 543).toString().slice(-2),
       YYYY: this.$Y,
@@ -302,7 +293,7 @@ class Day {
     );
   }
 
-  to(a: Day, showSuffix = true) {
+  to(a, showSuffix = true) {
     return Day.relationTime(this, a, showSuffix);
   }
 
@@ -310,7 +301,7 @@ class Day {
     return Day.relationTime(this, new Day(), showSuffix);
   }
 
-  from(a: Day, showSuffix = true): string {
+  from(a, showSuffix = true) {
     return Day.relationTime(this, a, showSuffix);
   }
 
@@ -318,7 +309,7 @@ class Day {
     return Day.relationTime(this, new Day(), showSuffix);
   }
   daysInMonth() {
-    return Day.getMonthDays(this.$Y, this.$m);
+    return Day.getMonthDays(this.$Y, this.$M);
   }
 
   toDate() {
@@ -353,21 +344,21 @@ class Day {
     return this.format('YYYY-MM-DDTHH:mm:ss.SSSZ');
   }
 
-  static max(firstItem: Day | Day[], ...otherItem: Day[]) {
+  static max(firstItem, ...otherItem) {
     const list = Array.isArray(firstItem) ? firstItem : [firstItem, ...otherItem];
     list.sort((a, b) => b.valueOf() - a.valueOf());
     return list[0];
   }
 
-  static min(firstItem: Day | Day[], ...otherItem: Day[]) {
+  static min(firstItem, ...otherItem) {
     const list = Array.isArray(firstItem) ? firstItem : [firstItem, ...otherItem];
     list.sort((a, b) => a.valueOf() - b.valueOf());
     return list[0];
   }
-  static isLeapYear(year: number) {
+  static isLeapYear(year) {
     return year % 100 === 0 ? year % 400 === 0 : year % 4 === 0;
   }
-  static getMonthDays(year: number, month: number) {
+  static getMonthDays(year, month) {
     const m = ((month % 12) + 12) % 12;
     if (m === 1) {
       if (Day.isLeapYear(year)) return 29;
@@ -379,20 +370,7 @@ class Day {
     return 30;
   }
 
-  /**
-   * 0 to 44 seconds 几秒前
-   * 45 to 89 seconds	m	1 分钟前
-   * 90 seconds to 44 minutes	mm	2 分钟前 ... 44 分钟前
-   * 45 to 89 minutes	h	1 小时前
-   * 90 minutes to 21 hours	hh	2 小时前 ... 21 小时前
-   * 2 to 35 hours	d	1 天前
-   * 36 hours to 25 days	dd	2 天前 ... 25 天前
-   * 26 to 45 days	M	1 个月前
-   * 46 days to 10 months	MM	2 个月前 ... 10 个月前
-   * 11 months to 17months	y	1 年前
-   * 18 months+	yy	2 年前 ... 20 年前
-   */
-  static relationTime(a: Day, b: Day, showSuffix = true): string {
+  static relationTime(a, b, showSuffix = true) {
     let time = a.$d.getTime() - b.$d.getTime();
     let str = '前';
     if (time < 0) {
@@ -420,7 +398,7 @@ class Day {
     return `${Math.round(dMonth / 12)}年${suffix}`;
   }
 
-  static isDay(d: Day) {
+  static isDay(d) {
     return d instanceof Day;
   }
 

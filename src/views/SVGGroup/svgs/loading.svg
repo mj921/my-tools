@@ -1,0 +1,15 @@
+<svg viewBox="0 0 128 128">
+  <path d="M64,32 A 32 32 1 1 0 64,96 A 32 32 1 1 0 64,32" stroke="red" fill="none" stroke-dasharray="32"
+    transform-origin="center">
+    <animateTransform attributeName="transform" type="rotate" values="0;360" dur="1s" repeatCount="indefinite">
+
+    </animateTransform>
+  </path>
+
+  <path d="M64,48 A 16 16 1 1 0 64,80 A 16 16 1 1 0 64,48" stroke="green" fill="none" stroke-dasharray="16"
+    stroke-dashoffset="16" transform-origin="center">
+    <animateTransform attributeName="transform" type="rotate" values="0;360" dur="1.5s" repeatCount="indefinite">
+
+    </animateTransform>
+  </path>
+</svg>

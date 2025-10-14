@@ -1,0 +1,5 @@
+<svg viewBox="0 0 128 128">
+  <line x1="0" x2="0" y1="0" y2="120" stroke="red" stroke-dasharray="100%" stroke-dashoffset="0">
+    <!-- <animate attributeName="stroke-dashoffset" values="100%;0%" repeatDur="3s" dur="3s" repeatCount="1" /> -->
+  </line>
+</svg>

@@ -1,0 +1,14 @@
+<svg viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="linear" gradientTransform="rotate(37)">
+      <stop offset="0%" stop-color="red" />
+      <stop offset="100%" stop-color="blue" />
+    </linearGradient>
+    <radialGradient id="radial">
+      <stop offset="0%" stop-color="orange" />
+      <stop offset="100%" stop-color="red" />
+    </radialGradient>
+  </defs>
+  <circle cx="8" cy="8" r="7" fill="url(#radial)" />
+  <rect x="18" y="0" width="32" height="16" rx="4" fill="url(#linear)" ry="8" />
+</svg>
