@@ -1,6 +1,6 @@
 <template>
   <div class="caiyan-container">
-    <CaiTitle type="geci" show-author />
+    <CaiTitle type="shici" show-author />
   </div>
 </template>
 <script lang="ts" setup>

@@ -370,7 +370,15 @@ const router = createRouter({
       meta: {
         title: '猜盐-歌词',
       },
-      component: () => import('../views/CaiYan/Geci.vue'),
+      component: () => import('../views/CaiYan/GeCi.vue'),
+    },
+    {
+      path: '/caiyan/shici',
+      name: 'caiyan-shici',
+      meta: {
+        title: '猜盐-诗词',
+      },
+      component: () => import('../views/CaiYan/ShiCi.vue'),
     },
   ],
 });

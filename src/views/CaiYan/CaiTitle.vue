@@ -8,7 +8,7 @@
     </div>
     <div class="caiyan-paragraph">
       <div
-        :class="['text-cell', { 'text-cell-show': el.show }]"
+        :class="['text-cell', { 'text-cell-show': el.show, 'text-cell-normal': !el.isText }]"
         v-for="(el, i) in answer"
         :key="`answer-${i}`"
       >
@@ -48,13 +48,19 @@ import message from '@/components/MjMessage';
 import { computed, ref } from 'vue';
 import request from '@/lib/request';
 
-const otherText = ',.\'"[]<>?/\\-=+_!@#$%^&*(){};:`~|，。、；‘《》？：“【】「」、！￥…（）——”·²';
-const props = defineProps<{
-  type: string;
-}>();
+const textReg = /[\u4e00-\u9fff0-9a-zA-Z]+/;
+const props = withDefaults(
+  defineProps<{
+    type: string;
+    showAuthor?: boolean;
+  }>(),
+  {
+    showAuthor: false,
+  },
+);
 const key = ref(localStorage.getItem(`caiyan-${props.type}`));
 const data = ref<{ text: string; show: boolean; isText: boolean }[][]>([]);
-const answer = ref<{ text: string; show: boolean }[]>([]);
+const answer = ref<{ text: string; show: boolean; isText: boolean }[]>([]);
 
 const keys = ref<string[]>([]);
 
@@ -63,21 +69,28 @@ const reset = async () => {
   errorText.value = [];
   ipted.value = new Set();
   win.value = false;
-  const res = await request<{ title: string; content: { paragraphs: string[][] } }>({
-    url: `/caiyan/${props.type}/${key.value}.json`,
-  });
-  data.value = (res.content.paragraphs?.[0] || [])
+  const res = await request<{ title: string; author: string; content: { paragraphs: string[][] } }>(
+    {
+      url: `/caiyan/${props.type}/${key.value}.json`,
+    },
+  );
+  const contents = res.content.paragraphs?.[0] || [];
+  if (props.showAuthor) {
+    contents.unshift(res.author);
+  }
+  data.value = contents
     .filter((el) => !!el)
     .map((el) =>
       el.split('').map((text) => ({
         text,
-        show: otherText.includes(text),
-        isText: !otherText.includes(text),
+        show: !textReg.test(text),
+        isText: textReg.test(text),
       })),
     );
   answer.value = res.title.split('').map((text) => ({
     text,
-    show: otherText.includes(text),
+    show: !textReg.test(text),
+    isText: textReg.test(text),
   }));
 };
 const getData = async (random = false) => {
