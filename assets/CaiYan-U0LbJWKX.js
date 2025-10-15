@@ -1,0 +1,1 @@
+import{r as e}from"./index-D0LXxPA_.js";import{d as o,o as a,b as n}from"./index-DG1xbQP4.js";const i=o({__name:"CaiYan",setup(r){return e({url:"/caiyan/baike/sum.json"}).then(console.log),(t,s)=>(a(),n("div"))}});export{i as default};
