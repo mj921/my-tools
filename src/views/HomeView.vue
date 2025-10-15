@@ -73,6 +73,16 @@ const navs = [
         link: '/game/chinese-combination',
         name: '汉字合成',
       },
+      {
+        logo: ChineseIcon,
+        link: '/caiyan-baike',
+        name: '猜盐-百科',
+      },
+      {
+        logo: ChineseIcon,
+        link: '/caiyan-geci',
+        name: '猜盐-歌词',
+      },
     ],
   },
   {
