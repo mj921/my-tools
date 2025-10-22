@@ -169,7 +169,21 @@ watch(
 );
 watch([() => props.streamReason + props.streamContent], () => {
   nextTick(() => {
-    document.getElementById(`chatRecord_${props.streamKey}`)?.scrollIntoView({ block: 'end' });
+    const recordEle = document.getElementById(`chatRecord_${props.streamKey}`);
+    const recordEleParent = recordEle?.parentElement?.parentElement;
+    if (
+      recordEleParent &&
+      recordEleParent.scrollHeight - 68 <= recordEleParent.offsetHeight + recordEleParent.scrollTop
+    ) {
+      console.log(
+        recordEleParent.scrollHeight - 10,
+        recordEleParent.offsetHeight,
+        recordEleParent.scrollTop,
+        recordEleParent.offsetHeight + recordEleParent.scrollTop,
+      );
+
+      recordEle!.scrollIntoView({ block: 'end' });
+    }
   });
 });
 getContentList();

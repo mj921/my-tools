@@ -204,8 +204,6 @@ const fetchDeepseek = (historyContent: DSMessageItem[], retry = 3) => {
           for (const line of lines) {
             if (line.startsWith('data:')) {
               const eventData = line.replace('data:', '').trim();
-              console.log(eventData);
-
               if (eventData === '[DONE]') continue;
 
               try {
