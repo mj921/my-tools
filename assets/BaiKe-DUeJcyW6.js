@@ -1,0 +1,1 @@
+import{C as e}from"./CaiTitle-BNRZCWNS.js";import{d as t,o as a,b as o,f as r}from"./index-C8_KvqLc.js";import"./MjMessage-B6PxiNxc.js";import"./index-D0LXxPA_.js";const i={class:"caiyan-container"},f=t({__name:"BaiKe",setup(n){return(s,c)=>(a(),o("div",i,[r(e,{type:"baike"})]))}});export{f as default};

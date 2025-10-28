@@ -1,0 +1,1 @@
+import{C as e}from"./CaiTitle-BNRZCWNS.js";import{d as o,o as t,b as a,f as i}from"./index-C8_KvqLc.js";import"./MjMessage-B6PxiNxc.js";import"./index-D0LXxPA_.js";const r={class:"caiyan-container"},f=o({__name:"ShiCi",setup(s){return(c,n)=>(t(),a("div",r,[i(e,{type:"shici","show-author":""})]))}});export{f as default};

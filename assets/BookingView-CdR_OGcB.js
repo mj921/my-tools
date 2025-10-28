@@ -1,0 +1,1 @@
+import{B as t,a as n}from"./store-BWngMyRt.js";import{d as r,o as s,b as a,f as _,h as c,q as i}from"./index-C8_KvqLc.js";import"./BinaryWriter-4Snmgu5s.js";const p={class:"booking"},k=r({__name:"BookingView",setup(m){const o=new t;return c(n,o),(d,f)=>{const e=i("router-view");return s(),a("div",p,[_(e)])}}});export{k as default};

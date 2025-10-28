@@ -1,0 +1,1 @@
+import{C as e}from"./CaiTitle-BNRZCWNS.js";import{d as o,o as t,b as a,f as r}from"./index-C8_KvqLc.js";import"./MjMessage-B6PxiNxc.js";import"./index-D0LXxPA_.js";const s={class:"caiyan-container"},f=o({__name:"GeCi",setup(c){return(i,n)=>(t(),a("div",s,[r(e,{type:"geci","show-author":""})]))}});export{f as default};
