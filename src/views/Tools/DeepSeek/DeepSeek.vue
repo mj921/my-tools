@@ -174,6 +174,17 @@ const fetchDeepseek = (historyContent: DSMessageItem[], retry = 3) => {
         const readChunk = async () => {
           const { value, done } = await reader!.read();
           if (done) {
+            if (
+              !answer.reasoning &&
+              /^[\s\n]*<think>([\s\S]+)<\/think>([\s\S]*)/.test(answer.content)
+            ) {
+              const matchs = answer.content.match(/^[\s\n]*<think>([\s\S]+)<\/think>([\s\S]*)/);
+
+              if (matchs && matchs.length >= 3) {
+                answer.reasoning = matchs[1].replace(/(^[\s\n]+|[\s\n]+$)/g, '');
+                answer.content = matchs[2].replace(/(^[\s\n]+|[\s\n]+$)/g, '');
+              }
+            }
             if (config[AiAppid.nebulablock] && answer.firstChatKey) {
               getTitle(answer.content);
             }
@@ -196,7 +207,6 @@ const fetchDeepseek = (historyContent: DSMessageItem[], retry = 3) => {
 
           // 处理数据块
           const chunk = prev + decoder.decode(value, { stream: true });
-          console.log(prev);
 
           prev = '';
           const lines = chunk.split('\n').filter((line) => line.trim());
